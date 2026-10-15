@@ -55,7 +55,8 @@ handles both (system package installation may need elevated privileges).
 that port free. It runs headless with zero retries. No deployment or credentials
 are involved. To use an already installed Chrome locally, run
 `PLAYWRIGHT_CHANNEL=chrome pnpm test:browser`; record that environment difference.
-CI should use the default matching Playwright Chromium instead.
+[Actions CI](docs/ci.md) uses the default matching Playwright Chromium and exposes
+the required `Quality gate` check.
 
 `test:artifacts` first tests the checker against temporary valid/broken fixtures,
 then checks the existing `dist/`. Both test commands require a fresh production
