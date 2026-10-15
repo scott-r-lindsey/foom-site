@@ -60,8 +60,9 @@ Run `corepack enable` before the following commands; see the
 | `pnpm serve`                     | Preview an existing production build; run build first |
 
 `pnpm test:artifacts` and `pnpm test:browser` validate an existing production
-build; see the smoke checks below. No CI workflow exists yet. Documentation-only
-edits need formatting, link/consistency checks, and `git diff --check`.
+build; see the smoke checks below. [Actions CI](ci.md) runs these checks for every
+pull request and push to main. Documentation-only edits need formatting,
+link/consistency checks, and `git diff --check` locally; CI still runs the full suite.
 
 ## Smoke checks
 
@@ -219,11 +220,11 @@ scope, evidence, commands and results, commit SHA, and outstanding work. Use
 `Refs #N` and explain what remains. Separate local validation from CI run links
 and results. Fix change-caused CI failures; record evidence for unrelated failures
 and continue independent work. Hand off a draft if blocked rather than waiting
-indefinitely. No CI exists at this baseline, so leave the PR draft for orchestrator
-review with local validation; do not describe CI as passing. When CI exists,
-required checks must be green before marking ready. Child implementers must not merge or enable auto-merge, delete branches, or
-remove worktrees. An explicitly authorized integration owner may review and merge
-PRs, including locally validated drafts while CI is not yet configured.
+indefinitely. The required `Quality gate` check must be green before marking
+ready; see [CI and branch protection](ci.md). Child implementers must not merge or
+enable auto-merge, delete branches, or remove worktrees. An explicitly authorized
+integration owner may review and merge PRs after required CI is green, including
+reviewed drafts.
 
 Keep secrets, generated output, and local files out of commits as described in
 `AGENTS.md`. Use placeholders for required variables. Infrastructure and hosting
