@@ -194,7 +194,9 @@ owner, not automatic privilege escalation by deployment.
 
 ## Multipage build and publication requirements
 
-These are agreed requirements for #10/#11, not implemented behavior:
+The offline infrastructure and publication contract are implemented in
+[terraform/README.md](../terraform/README.md). The following requirements also
+govern #11's transport/workflow and authorized live verification:
 
 - Resolve nested directory indexes, e.g. `/features/` serves
   `/features/index.html`. Define canonical redirects for `/features` and

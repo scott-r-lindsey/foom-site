@@ -8,6 +8,7 @@ export default defineConfig([
   globalIgnores([
     '**/inspiration/**',
     '**/node_modules/**',
+    '**/.terraform/**',
     '**/{dist,build,out,coverage,test-results,playwright-report}/**',
     '**/{.astro,.cache,.vite,.pnpm-store}/**',
     '.husky/_/**',
@@ -23,6 +24,11 @@ export default defineConfig([
   {
     files: ['**/*.{ts,tsx,astro}'],
     extends: [ts.configs.recommended],
+  },
+  {
+    files: ['terraform/routing.js'],
+    languageOptions: { sourceType: 'script' },
+    rules: { 'no-unused-vars': ['error', { varsIgnorePattern: '^handler$' }] },
   },
   ...astro.configs.recommended,
   {

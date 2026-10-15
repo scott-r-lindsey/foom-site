@@ -18,7 +18,7 @@ retries. Both `development`/`https://preview.example.test` and
 
 ## Stable checks and branch protection
 
-The check names are `Validate (development)`, `Validate (production)`, and
+The check names are `Validate (development)`, `Validate (production)`, **`Infrastructure (offline)`**, and
 **`Quality gate`**. Require `Quality gate` for `main` in GitHub Settings → Rules →
 Rulesets (or Branches → branch protection): require a pull request and status
 checks before merging, select `Quality gate` from GitHub Actions after its first
@@ -27,7 +27,7 @@ Apply the rule to the intended contributors and review any bypass policy. This
 change documents setup; it does not mutate repository settings or claim that
 branch protection is already enabled. Keep the gate name unique across workflows.
 
-The final job uses `always()` and depends on the complete validation matrix.
+The final job uses `always()` and depends on the complete validation matrix and offline infrastructure job.
 Only explicit `success` passes; failed, cancelled, skipped, absent, and unknown
 results fail. Upload failures also fail validation. If GitHub cancels the whole
 run, a cancelled gate cannot satisfy a required successful check. New required
@@ -96,3 +96,21 @@ credentials; pnpm setup reads `packageManager`, then setup-node selects `.nvmrc`
 and configures the dependency cache. Cache hits never replace frozen installs.
 Review upstream support, runtime requirements, and release-to-SHA resolution when
 updating these pins.
+
+## Offline infrastructure checks
+
+`Infrastructure (offline)` installs Terraform 1.15.9 using pinned
+[hashicorp/setup-terraform v4.0.1](https://github.com/hashicorp/setup-terraform/releases/tag/v4.0.1).
+It checks recursive formatting, installs the locked AWS 6.21.0 provider with
+`init -backend=false -lockfile=readonly`, validates, then executes explicitly
+mocked plan tests for dev/prod and default-workspace rejection. Both provider
+configurations are mocked. No credentials, backend initialization, cloud API calls,
+deployment jobs or write permissions are added. The Quality gate requires this
+job's explicit success as well as the existing matrix; the failure fixture covers
+mixed successful/failed results.
+
+Each site matrix job also runs `pnpm test:hosting` and generates the file manifest
+from its existing build with `pnpm hosting:manifest`. The helpers and tests receive
+ESLint and strict TypeScript coverage. This manifest is a local metadata check;
+the existing validation-only artifact/provenance contract remains unchanged and
+must not be deployed. See the [publication contract](../terraform/README.md).

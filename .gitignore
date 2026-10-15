@@ -22,3 +22,9 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Terraform local data and plans
+**/.terraform/**
+*.tfstate
+*.tfstate.*
+*.tfplan

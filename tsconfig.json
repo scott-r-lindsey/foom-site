@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "inspiration"],
+  "exclude": ["dist", "inspiration", "terraform/.terraform"],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react"
