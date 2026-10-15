@@ -179,7 +179,7 @@ class Store:
         self.distribution = distribution
 
     def aws(self, *args):
-        return command('aws', '--region', 'us-west-2', *args)
+        return command('aws', '--region', 'us-west-2', '--output', 'json', '--no-cli-pager', *args)
 
     def get(self, key):
         # Missing is distinct from access/network failure. list only exact prefix.
@@ -315,7 +315,8 @@ def main():
             token_path = Path(token_directory) / 'oidc-token'
             token_path.write_text(token)
             token_path.chmod(0o600)
-            session = json.loads(command('aws', 'sts', 'assume-role-with-web-identity',
+            session = json.loads(command('aws', '--region', 'us-west-2', '--output', 'json',
+                                        '--no-cli-pager', 'sts', 'assume-role-with-web-identity',
                                         '--role-arn', role, '--role-session-name', f"foom-{run['id']}",
                                         '--web-identity-token', 'file://' + str(token_path),
                                         '--duration-seconds', '3600'))
