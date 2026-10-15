@@ -144,10 +144,6 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'digest'):
                 r.unpack(data, '0' * 64, self.temp.name)
 
-
-if __name__ == '__main__':
-    unittest.main()
-
 class BoundaryTests(unittest.TestCase):
     def test_valid_archive_and_recomputed_manifest(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -241,3 +237,30 @@ class BoundaryTests(unittest.TestCase):
             self.assertNotIn(f'foom-site-{ "prod" if env == "dev" else "dev" }-', json.dumps(result))
             state = result['backend']['Statement'][2]
             self.assertNotIn('s3:DeleteObject', state['Action'])
+
+class NoCredentialsTests(unittest.TestCase):
+    def test_disabled_and_failed_gate_never_request_oidc_or_aws(self):
+        for enabled, passed in (('false', True), ('true', False)):
+            with patch.dict(r.os.environ, dict(DEPLOY_ENV='dev', DEPLOY_ENABLED=enabled,
+                                              GITHUB_RUN_ID='1', GITHUB_RUN_ATTEMPT='1')),\
+                    patch.object(r, 'gh', return_value=dict(run_attempt=1)),\
+                    patch.object(r, 'gate', return_value=passed),\
+                    patch.object(r, 'command', side_effect=AssertionError('No external command')),\
+                    patch.object(r.urllib.request, 'urlopen', side_effect=AssertionError('No token')):
+                with self.assertRaises(ValueError):
+                    r.main()
+
+    def test_archive_size_and_duplicate_zip_entries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(r, 'LIMIT', 1):
+                with self.assertRaisesRegex(ValueError, 'size/digest'):
+                    r.unpack(b'too large', r.digest(b'too large'), directory)
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, 'w') as archive:
+                archive.writestr('../manifest.json', '{}')
+            with self.assertRaisesRegex(ValueError, 'ZIP entries'):
+                r.unpack(buf.getvalue(), r.digest(buf.getvalue()), directory)
+
+
+if __name__ == '__main__':
+    unittest.main()

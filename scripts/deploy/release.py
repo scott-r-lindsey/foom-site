@@ -216,8 +216,7 @@ class Store:
                  self.distribution, '--id', result['Invalidation']['Id'])
 
 
-def publish(store, ledger, identity, files, directory, artifact, now, recovery=False):
-    """Checkpoint before every phase. Incomplete transactions require explicit recovery."""
+def preflight(ledger, identity, files, recovery=False):
     require(ledger.get('schemaVersion') == 1, 'Unknown ledger schema')
     pending = ledger.get('pending')
     require(not pending or (recovery and pending['identity'] == identity),
@@ -230,6 +229,11 @@ def publish(store, ledger, identity, files, directory, artifact, now, recovery=F
             prior = old.get(entry['key'])
             require(not prior or 'immutable' not in prior['cacheControl'] or
                     prior['sha256'] == entry['sha256'], 'Retained immutable conflict')
+
+
+def publish(store, ledger, identity, files, directory, artifact, now, recovery=False):
+    """Checkpoint before every phase. Incomplete transactions require explicit recovery."""
+    preflight(ledger, identity, files, recovery)
     release_id = f"{identity['runId']}-{identity['runAttempt']}-{identity['artifactId']}"
     prior_docs = {f['key'] for r in ledger['releases'] for f in r['files']['files']
                   if f['phase'] == 'documents'}
@@ -301,27 +305,19 @@ def main():
             'Authorization': 'Bearer ' + os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})
         token = json.load(urllib.request.urlopen(request))['value']
         role = f'arn:aws:iam::225319921763:role/foom-site-github-{CONFIG[environment][2]}-deploy'
-        session = json.loads(command('aws', 'sts', 'assume-role-with-web-identity',
-                                    '--role-arn', role, '--role-session-name', f"foom-{run['id']}",
-                                    '--web-identity-token', token, '--duration-seconds', '3600'))
+        # Never put the token in argv: subprocess failures include argv in tracebacks.
+        with tempfile.TemporaryDirectory() as token_directory:
+            token_path = Path(token_directory) / 'oidc-token'
+            token_path.write_text(token)
+            token_path.chmod(0o600)
+            session = json.loads(command('aws', 'sts', 'assume-role-with-web-identity',
+                                        '--role-arn', role, '--role-session-name', f"foom-{run['id']}",
+                                        '--web-identity-token', 'file://' + str(token_path),
+                                        '--duration-seconds', '3600'))
         creds = session['Credentials']
         os.environ.update(AWS_ACCESS_KEY_ID=creds['AccessKeyId'],
                           AWS_SECRET_ACCESS_KEY=creds['SecretAccessKey'],
                           AWS_SESSION_TOKEN=creds['SessionToken'])
-        # Only separately approved, trusted-main infrastructure may run with credentials.
-        if os.environ.get('INFRA_APPROVED_SHA'):
-            require(command('git', 'rev-parse', 'HEAD').decode().strip() ==
-                    os.environ['INFRA_APPROVED_SHA'], 'Infrastructure approval SHA mismatch')
-            os.environ['TF_WORKSPACE'] = environment
-            command('terraform', '-chdir=terraform', 'init', '-input=false', '-lockfile=readonly')
-            command('terraform', '-chdir=terraform', 'plan', '-input=false',
-                    '-out=approved.tfplan', f'-var=environment={environment}')
-            command('terraform', '-chdir=terraform', 'apply', '-input=false', 'approved.tfplan')
-            outputs = json.loads(command('terraform', '-chdir=terraform', 'output', '-json', 'publication'))
-            require(outputs['environment'] == environment and outputs['origin'] == CONFIG[environment][1]
-                    and outputs['bucket'] == f'foom-site-{environment}-225319921763-us-west-2'
-                    and outputs['distribution_id'] == os.environ['DISTRIBUTION_ID'],
-                    'Terraform output differs from approved publication target')
         distribution = os.environ['DISTRIBUTION_ID']
         require(re.fullmatch('[A-Z0-9]{10,32}', distribution), 'Invalid distribution ID')
         store = Store(environment, distribution)
@@ -354,17 +350,34 @@ def main():
             identity['rollbackOf'] = selected['identity']
             # New scheduling identity; the retained artifact remains the content identity.
             identity['contentSha'] = manifest['sourceSha']
+            identity['contentArtifactId'] = selected['identity'].get('contentArtifactId', selected['identity']['artifactId'])
             identity['artifactDigest'] = selected['identity']['artifactDigest']
             if ledger.get('pending'):
                 failed = ledger['pending']
                 failed.update(publishedAt=None, supersededAt=None, failed=True)
                 ledger['releases'].append(failed)
                 ledger['pending'] = None
+        preflight(ledger, identity, files, bool(recovery))
+        # Only separately approved, trusted-main infrastructure may run with credentials.
+        if os.environ.get('INFRA_APPROVED_SHA'):
+            require(command('git', 'rev-parse', 'HEAD').decode().strip() ==
+                    os.environ['INFRA_APPROVED_SHA'], 'Infrastructure approval SHA mismatch')
+            os.environ['TF_WORKSPACE'] = environment
+            command('terraform', '-chdir=terraform', 'init', '-input=false', '-lockfile=readonly')
+            command('terraform', '-chdir=terraform', 'plan', '-input=false',
+                    '-out=approved.tfplan', f'-var=environment={environment}')
+            command('terraform', '-chdir=terraform', 'apply', '-input=false', 'approved.tfplan')
+            outputs = json.loads(command('terraform', '-chdir=terraform', 'output', '-json', 'publication'))
+            require(outputs['environment'] == environment and outputs['origin'] == CONFIG[environment][1]
+                    and outputs['bucket'] == f'foom-site-{environment}-225319921763-us-west-2'
+                    and outputs['distribution_id'] == os.environ['DISTRIBUTION_ID'],
+                    'Terraform output differs from approved publication target')
         publish(store, ledger, identity, files, directory, data,
                 datetime.now(timezone.utc).isoformat(), recovery=bool(recovery))
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
             summary.write(f"Published {CONFIG[environment][1]}\n\nCommit: `{identity.get('contentSha', expected['sourceSha'])}` "
-                          f"Artifact: `{artifact_id}` Digest: `{metadata['digest']}`\n")
+                          f"Content artifact: `{identity.get('contentArtifactId', str(artifact_id))}` "
+                          f"Digest: `{identity['artifactDigest']}` Scheduling run: `{run['id']}`\n")
 
 
 if __name__ == '__main__':
