@@ -144,6 +144,14 @@ def verify_identity(manifest, run, environment, expected):
             'Source lockfile mismatch')
 
 
+def workflow_contract(source_sha):
+    for workflow in ('quality.yml', 'publish.yml'):
+        path = f'.github/workflows/{workflow}'
+        source = gh(f'contents/{path}?ref={source_sha}')
+        require(base64.b64decode(source['content']) == Path(path).read_bytes(),
+                'Workflow changes require main integration before publication')
+
+
 def reject_newer(run, environment):
     # Enumerate newest first; run_attempt does not affect original ordering.
     page = 1
@@ -155,7 +163,8 @@ def reject_newer(run, environment):
             if other['event'] != run['event'] or not gate(other):
                 continue
             try:
-                eligible(other, environment)
+                source = eligible(other, environment)
+                workflow_contract(source['sourceSha'])
             except ValueError:
                 continue
             raise ValueError('A newer eligible passing run exists')
@@ -280,11 +289,7 @@ def main():
     # A workflow-editing PR may validate but must not publish. Run only the main
     # definition/tool contract, even though GitHub resolves this local reusable
     # workflow while parsing the initial bootstrap PR.
-    for workflow in ('quality.yml', 'publish.yml'):
-        path = f'.github/workflows/{workflow}'
-        source = gh(f"contents/{path}?ref={expected['sourceSha']}")
-        require(base64.b64decode(source['content']) == Path(path).read_bytes(),
-                'Workflow changes require main integration before publication')
+    workflow_contract(expected['sourceSha'])
     artifact_id = int(os.environ['ARTIFACT_ID'])
     metadata = gh(f'actions/artifacts/{artifact_id}')
     require(metadata['workflow_run']['id'] == run['id'] and not metadata['expired'] and
@@ -366,12 +371,18 @@ def main():
             command('terraform', '-chdir=terraform', 'init', '-input=false', '-lockfile=readonly')
             command('terraform', '-chdir=terraform', 'plan', '-input=false',
                     '-out=approved.tfplan', f'-var=environment={environment}')
+            require(eligible(run, environment, os.environ.get('PR_NUMBER') or None) == expected,
+                    'Source changed while planning')
+            reject_newer(run, environment)
             command('terraform', '-chdir=terraform', 'apply', '-input=false', 'approved.tfplan')
             outputs = json.loads(command('terraform', '-chdir=terraform', 'output', '-json', 'publication'))
             require(outputs['environment'] == environment and outputs['origin'] == CONFIG[environment][1]
                     and outputs['bucket'] == f'foom-site-{environment}-225319921763-us-west-2'
                     and outputs['distribution_id'] == os.environ['DISTRIBUTION_ID'],
                     'Terraform output differs from approved publication target')
+        require(eligible(run, environment, os.environ.get('PR_NUMBER') or None) == expected,
+                'Source changed before publication')
+        reject_newer(run, environment)
         publish(store, ledger, identity, files, directory, data,
                 datetime.now(timezone.utc).isoformat(), recovery=bool(recovery))
         with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:

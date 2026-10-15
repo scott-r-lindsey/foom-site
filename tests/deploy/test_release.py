@@ -232,7 +232,8 @@ class BoundaryTests(unittest.TestCase):
         run = dict(created_at='2026-10-15T00:00:00Z', id=10, event='pull_request')
         newer = dict(created_at='2026-10-15T00:00:00Z', id=11, event='pull_request')
         with patch.object(r, 'gh', return_value=dict(workflow_runs=[newer, dict(run, created_at='2026-10-14')])), \
-                patch.object(r, 'gate', return_value=True), patch.object(r, 'eligible', return_value={}):
+                patch.object(r, 'gate', return_value=True), patch.object(r, 'eligible', return_value={'sourceSha': 'source'}), \
+                patch.object(r, 'workflow_contract'):
             with self.assertRaisesRegex(ValueError, 'newer eligible'):
                 r.reject_newer(run, 'dev')
         with patch.object(r, 'gh', return_value=dict(workflow_runs=[newer, dict(run, created_at='2026-10-14')])), \
