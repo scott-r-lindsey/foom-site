@@ -268,6 +268,10 @@ class BoundaryTests(unittest.TestCase):
                 'token.actions.githubusercontent.com:sub'].endswith(subject))
             self.assertNotIn('iam:', json.dumps(result['publication']))
             self.assertNotIn(f'foom-site-{ "prod" if env == "dev" else "dev" }-', json.dumps(result))
+            function = next(s for s in result['infrastructureMaintenanceReview']['Statement']
+                            if s['Sid'] == 'OwnFunction')
+            self.assertEqual(function['Resource'],
+                             f'arn:aws:cloudfront::225319921763:function/foom-site-{env}-routing')
             state = result['backend']['Statement'][2]
             self.assertNotIn('s3:DeleteObject', state['Action'])
 

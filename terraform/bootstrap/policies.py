@@ -73,7 +73,7 @@ def templates(env):
               f'arn:aws:cloudfront::{account}:distribution/REPLACE_{env.upper()}_DISTRIBUTION_ID'),
         allow('OwnFunction', ['cloudfront:DescribeFunction', 'cloudfront:GetFunction',
                               'cloudfront:UpdateFunction', 'cloudfront:PublishFunction'],
-              f'arn:aws:cloudfront::{account}:function/foom-site-{env}'),
+              f'arn:aws:cloudfront::{account}:function/foom-site-{env}-routing'),
         allow('OwnCertificate', ['acm:DescribeCertificate', 'acm:ListTagsForCertificate',
                                  'acm:AddTagsToCertificate', 'acm:RemoveTagsFromCertificate'],
               f'arn:aws:acm:us-east-1:{account}:certificate/REPLACE_{env.upper()}_CERTIFICATE_ID'),
