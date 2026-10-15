@@ -18,10 +18,14 @@ const { title, description } = Astro.props;
     <title>{title === 'foom' ? title : `${title} | foom`}</title>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content">
+      Skip to content
+    </a>
     <header class="site-header">
       <div class="container">
-        <a class="wordmark" href="/" aria-label="foom home">foom</a>
+        <a class="wordmark" href="/" aria-label="foom home">
+          foom
+        </a>
       </div>
     </header>
     <main id="main-content" class="container" tabindex="-1">
