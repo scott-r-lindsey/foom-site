@@ -2,23 +2,25 @@
 
 `.github/workflows/quality.yml` runs on every pull request (including forks) and
 push to `main`, without path filters. `pull_request` checks GitHub's synthetic
-merge commit, so it verifies the proposed integration with the base. It uses no
-secrets, environments, deployment credentials, or write permissions. Fork approval
+merge commit, so it verifies the proposed integration with the base. Validation jobs use no secrets, environments, deployment credentials, or write
+permissions. A disabled-by-default dependent job can call the trusted-main
+publisher after `Quality gate` passes; only that job receives OIDC permissions. Fork approval
 may still be required by GitHub's repository policy. Do not replace this trigger
 with `pull_request_target` to execute contributor code.
 
-Superseded runs for the same PR/ref are cancelled. Each Ubuntu 24.04 matrix job
+Runs are non-cancelling because the workflow can include serialized publication. Each Ubuntu 24.04 matrix job
 uses `.nvmrc`, the `packageManager` pin, a pnpm store cache keyed by
 `pnpm-lock.yaml`, and `pnpm install --frozen-lockfile`. It runs the gate's negative
 fixtures, lint (including formatting), typecheck, build, artifact fixtures and
 checks, matching Chromium installation, and headless browser tests with zero
-retries. Both `development`/`https://preview.example.test` and
-`production`/`https://metadata.example.test` are checked. These origins come from
-[metadata verification examples](metadata.md), not public Foom domains.
+retries. Four builds are checked: `development`/`https://preview.example.test`,
+`production`/`https://metadata.example.test`, and the corresponding approved
+`https://dev.foom-term.com` / `https://foom-term.com` origins. The `.test` origins remain [metadata verification fixtures](metadata.md).
+[Deployment preparation](deployment.md) describes the separately gated real-origin artifacts.
 
 ## Stable checks and branch protection
 
-The check names are `Validate (development)`, `Validate (production)`, **`Infrastructure (offline)`**, and
+The matrix check names include environment and origin, alongside **`Infrastructure (offline)`**, and
 **`Quality gate`**. Require `Quality gate` for `main` in GitHub Settings → Rules →
 Rulesets (or Branches → branch protection): require a pull request and status
 checks before merging, select `Quality gate` from GitHub Actions after its first
@@ -114,3 +116,17 @@ from its existing build with `pnpm hosting:manifest`. The helpers and tests rece
 ESLint and strict TypeScript coverage. This manifest is a local metadata check;
 the existing validation-only artifact/provenance contract remains unchanged and
 must not be deployed. See the [publication contract](../terraform/README.md).
+
+## Deployment artifact extension
+
+For approved real origins, packaging also includes the #10 `files.json`, sets
+`purpose: deployment` and `deployable: true`, and uploads
+`deployment-<SITE_ENV>-<github.sha>-<run_id>-<run_attempt>` for 14 days. The
+validation-only statements above apply to the two `.test` builds only. Both
+kinds are covered by the entire Quality gate. No deployment variable is enabled
+by this repository change. See [deployment operations](deployment.md) for trusted
+consumption, durable archive retention, non-cancelling locks and live limitations.
+
+Python publication guard/failure tests run in every validation job. The required
+`Quality gate` does not depend on the optional publication job; a deployment
+failure is reported separately and must be investigated operationally.

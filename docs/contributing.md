@@ -59,6 +59,9 @@ Run `corepack enable` before the following commands; see the
 | `pnpm build`                     | Produce static HTML and assets in `dist/`             |
 | `pnpm serve`                     | Preview an existing production build; run build first |
 
+`python3 -m unittest discover -s tests/deploy -v` checks publication guards and
+partial-failure behavior offline; see [deployment operations](deployment.md).
+
 `pnpm test:hosting` checks offline routing and publication metadata/retention.
 `pnpm hosting:manifest` describes an existing build; see
 [the infrastructure guide](../terraform/README.md).
