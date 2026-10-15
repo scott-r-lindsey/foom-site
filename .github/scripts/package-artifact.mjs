@@ -12,11 +12,28 @@ const sha256 = (file) =>
 const output = '.cache/ci-artifact';
 mkdirSync(output, { recursive: true });
 // Archive the existing checked output; never rebuild during packaging/deployment.
-execFileSync('tar', ['-czf', `${output}/dist.tar.gz`, '-C', 'dist', '.']);
+execFileSync('tar', [
+  '--exclude=.gitkeep',
+  '-czf',
+  `${output}/dist.tar.gz`,
+  '-C',
+  'dist',
+  '.',
+]);
+const deployable = [
+  'https://dev.foom-term.com',
+  'https://foom-term.com',
+].includes(required('SITE_ORIGIN'));
+if (deployable) {
+  writeFileSync(
+    `${output}/files.json`,
+    readFileSync('.cache/hosting/files.json'),
+  );
+}
 const manifest = {
   schemaVersion: 1,
-  purpose: 'validation-only',
-  deployable: false,
+  purpose: deployable ? 'deployment' : 'validation-only',
+  deployable,
   repository: required('GITHUB_REPOSITORY'),
   event: required('GITHUB_EVENT_NAME'),
   sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], {

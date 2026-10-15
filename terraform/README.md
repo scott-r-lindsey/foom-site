@@ -13,9 +13,10 @@ tags identify the repository, application, environment and management owner.
 Only matching `dev`/`prod` workspaces and `environment` inputs are accepted;
 `default`, unknown inputs and mismatches fail a resource precondition (not a
 nonblocking check). Each workspace creates only its own environment. The backend
-uses the exact approved prefix/key, encryption and S3 lockfiles. CI never selects
-or initializes that backend. Its live configuration and permissions require
-separate authorization and review in #11.
+uses the exact approved prefix/key, encryption and S3 lockfiles. Offline quality CI never selects or initializes that backend. The future
+explicitly approved trusted-main deployment path can initialize it under the
+environment lock; see [deployment operations](../docs/deployment.md). Its live
+configuration and permissions require separate authorization and review.
 
 ## Credential-free checks
 
@@ -143,3 +144,13 @@ versioning alone is neither URL retention nor an application rollback procedure.
 #11 implements the actual publisher/bootstrap and approved-origin artifact path;
 #12 must record authorized live deep-link, query/redirect, 404 versus access-fault,
 TLS/headers, freshness, retention and rollback checks in dev before production.
+
+## Publication implementation
+
+[#11 deployment preparation](../docs/deployment.md) now supplies the actual
+AWS CLI adapter, trusted-main artifact verifier, durable journal, indefinite
+archive/asset retention and explicit recovery/rollback selection. Publication and
+infrastructure approval remain disabled by default; no live verification is
+claimed. [Bootstrap review templates](bootstrap/README.md) are scoped offline
+starting points, with initial infrastructure creation and policy expansion
+reserved for the separately authorized bootstrap owner.

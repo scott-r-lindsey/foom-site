@@ -10,11 +10,11 @@ permissions:
 
 concurrency:
   group: quality-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   validate:
-    name: Validate (${{ matrix.site_env }})
+    name: Validate (${{ matrix.site_env }} / ${{ matrix.site_origin }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -24,6 +24,10 @@ jobs:
             site_origin: https://preview.example.test
           - site_env: production
             site_origin: https://metadata.example.test
+          - site_env: development
+            site_origin: https://dev.foom-term.com
+          - site_env: production
+            site_origin: https://foom-term.com
     env:
       HUSKY: '0'
       SITE_ENV: ${{ matrix.site_env }}
@@ -42,6 +46,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: bash .github/scripts/test-quality-gate.sh
+      - run: python3 -m unittest discover -s tests/deploy -v
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
@@ -55,11 +60,11 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
         run: node .github/scripts/package-artifact.mjs
-      - name: Upload validation-only artifact
+      - name: Upload checked artifact
         id: upload
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: validation-only-${{ matrix.site_env }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: ${{ contains(matrix.site_origin, '.test') && 'validation-only' || 'deployment' }}-${{ matrix.site_env }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .cache/ci-artifact/
           if-no-files-found: error
           retention-days: 14
@@ -69,7 +74,7 @@ jobs:
           ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
-          printf '### Validation-only artifact (%s)\n\nID: `%s`\n\nDigest: `%s`\n\nURL: %s\n' \
+          printf '### Checked artifact (%s)\n\nID: `%s`\n\nDigest: `%s`\n\nURL: %s\n' \
             "$SITE_ENV" "$ARTIFACT_ID" "$ARTIFACT_DIGEST" "$ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
 
   infrastructure:
@@ -107,3 +112,18 @@ jobs:
           VALIDATION_RESULT: ${{ needs.validate.result }}
           INFRASTRUCTURE_RESULT: ${{ needs.infrastructure.result }}
         run: bash .github/scripts/quality-gate.sh "$VALIDATION_RESULT" "$INFRASTRUCTURE_RESULT"
+
+  deploy:
+    name: Deploy validated artifact
+    needs: [quality-gate, validate]
+    if: >-
+      ${{ needs.quality-gate.result == 'success' &&
+          ((github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' &&
+            github.event.pull_request.head.repo.full_name == github.repository && vars.DEV_DEPLOY_ENABLED == 'true') ||
+           (github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PROD_DEPLOY_ENABLED == 'true')) }}
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      id-token: write
+    uses: ./.github/workflows/publish.yml

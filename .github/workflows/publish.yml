@@ -1,0 +1,56 @@
+name: Trusted publication
+on:
+  workflow_call:
+permissions: {}
+jobs:
+  publish:
+    if: >-
+      ${{ github.repository == 'scott-r-lindsey/foom-site' &&
+          ((github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' &&
+            github.event.pull_request.head.repo.full_name == github.repository && vars.DEV_DEPLOY_ENABLED == 'true') ||
+           (github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PROD_DEPLOY_ENABLED == 'true')) }}
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: foom-release-${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: read
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DEPLOY_ENV: ${{ github.event_name == 'pull_request' && 'dev' || 'prod' }}
+      DEPLOY_ENABLED: ${{ github.event_name == 'pull_request' && vars.DEV_DEPLOY_ENABLED || vars.PROD_DEPLOY_ENABLED }}
+      DISTRIBUTION_ID: ${{ github.event_name == 'pull_request' && vars.DEV_DISTRIBUTION_ID || vars.PROD_DISTRIBUTION_ID }}
+      RECOVERY_RELEASE: ${{ github.event_name == 'pull_request' && vars.DEV_RECOVERY_RELEASE || vars.PROD_RECOVERY_RELEASE }}
+      INFRA_APPROVED_SHA: ${{ github.event_name == 'pull_request' && vars.DEV_INFRA_APPROVED_SHA || vars.PROD_INFRA_APPROVED_SHA }}
+      TF_IN_AUTOMATION: 'true'
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      AWS_EC2_METADATA_DISABLED: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        if: ${{ env.INFRA_APPROVED_SHA != '' }}
+        with:
+          terraform_version: 1.15.9
+          terraform_wrapper: false
+      - name: Select immutable artifact from this run
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          SITE_ENV=production
+          if [ "$DEPLOY_ENV" = dev ]; then SITE_ENV=development; fi
+          NAME="deployment-$SITE_ENV-$SOURCE_SHA-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          ARTIFACT_ID=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
+            --jq ".artifacts[] | select(.name == \"$NAME\") | .id")
+          [[ "$ARTIFACT_ID" =~ ^[0-9]+$ ]]
+          echo "ARTIFACT_ID=$ARTIFACT_ID" >> "$GITHUB_ENV"
+      - name: Verify, authenticate and publish with trusted main tools
+        run: python3 scripts/deploy/release.py

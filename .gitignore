@@ -28,3 +28,7 @@ dist/
 *.tfstate
 *.tfstate.*
 *.tfplan
+
+# Python deployment test caches
+__pycache__/
+*.pyc
