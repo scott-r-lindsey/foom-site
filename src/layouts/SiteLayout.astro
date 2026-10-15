@@ -1,12 +1,24 @@
 ---
 import '../styles/global.css';
+import favicon from '../assets/favicon.svg';
 
 interface Props {
   title: string;
   description: string;
+  noindex?: boolean;
+  canonicalPath?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false, canonicalPath } = Astro.props;
+const pageTitle = title === 'foom' ? title : `${title} | foom`;
+const canonical = new URL(
+  canonicalPath ?? `${Astro.url.pathname.replace(/\/+$/, '')}/`,
+  Astro.site,
+);
+const robots =
+  noindex || import.meta.env.SITE_INDEXABLE !== 'true'
+    ? 'noindex, nofollow'
+    : 'index, follow';
 ---
 
 <!doctype html>
@@ -15,7 +27,18 @@ const { title, description } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <title>{title === 'foom' ? title : `${title} | foom`}</title>
+    <title>{pageTitle}</title>
+    <link rel="canonical" href={canonical.href} />
+    <link rel="icon" type="image/svg+xml" href={favicon.src} />
+    <meta name="robots" content={robots} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="foom" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">
