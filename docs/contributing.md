@@ -59,9 +59,70 @@ Run `corepack enable` before the following commands; see the
 | `pnpm build`                     | Produce static HTML and assets in `dist/`             |
 | `pnpm serve`                     | Preview an existing production build; run build first |
 
-No unit-test, browser-test, or CI command exists yet; those belong to separate
-issues. Do not claim absent checks ran. Documentation-only edits need formatting,
-link/consistency checks, and `git diff --check`.
+`pnpm test:artifacts` and `pnpm test:browser` validate an existing production
+build; see the smoke checks below. No CI workflow exists yet. Documentation-only
+edits need formatting, link/consistency checks, and `git diff --check`.
+
+## Smoke checks
+
+Use the pinned Node/pnpm versions, then run these commands in this order locally
+or in CI:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test:artifacts
+pnpm exec playwright install --with-deps chromium
+pnpm test:browser
+```
+
+`pnpm typecheck` includes the TypeScript test files and Playwright configuration.
+Node runs the artifact tests directly with its built-in TypeScript support.
+Playwright needs a matching browser download and Linux system libraries; its
+`install --with-deps chromium` command installs both. System library installation
+may require elevated privileges. Repeat browser setup after dependency upgrades;
+CI must install the browser matching the lockfile. For a local machine with
+Chrome already installed, `PLAYWRIGHT_CHANNEL=chrome pnpm test:browser` is an
+explicit alternative. Report that choice, since it differs from bundled Chromium.
+
+The artifact command runs temporary fixture tests and then validates `dist/`.
+It requires home and 404 output, page titles/main headings, useful 404 content
+and a home link. It discovers every emitted HTML page and checks local `href`,
+`src`, `poster`, `data`, and `srcset` references, nested directory routes, and
+HTML fragment targets. It also checks CSS `url()` and quoted `@import` assets,
+using actual emitted names rather than hardcoded fingerprints. Fixture tests
+prove missing home/404 output, nested links, fragments, stylesheets, CSS assets,
+responsive images, and unhelpful 404 content fail. Fixtures live in temporary
+OS directories and are removed after each test.
+
+Absolute/scheme-relative URLs (including canonical, Open Graph, external links,
+and CDN assets) are not fetched or mapped to local files. This is a focused
+static-site checker, not a crawler: it does not interpret JavaScript, inline CSS,
+CSS escapes, or hosting rewrites. A `base` tag fails explicitly because it would
+change relative URL semantics. Add expected outputs and meaningful fixtures as
+routes and asset conventions expand; the required output list currently covers
+the two shipped routes. Generated directories and reports remain ignored.
+
+The browser suite starts its own production preview at `127.0.0.1:4327` (keep
+that port free), and stops it afterward. `--ignore-lock` keeps Astro preview in
+the foreground even in agent shells so Playwright owns its lifetime. It uses headless Chromium at 320px and
+1440px widths with zero retries and no fixed sleeps. It checks both routes for
+semantic landmarks, one main heading, WCAG A/AA axe findings, loading failures,
+and horizontal overflow including enlarged text. Separate JavaScript-disabled
+contexts exercise the first-tab skip link, visible focus, focus transfer to main,
+and keyboard activation of the 404 home link. These are the real interactions
+in the current shell; no React interaction is invented. Future interactive
+controls need focused keyboard tests when they land.
+
+Automated accessibility checks do not replace manual review of reading order,
+focus appearance/contrast, screen reader use, or future interactive behavior.
+Neither filesystem checks nor Astro preview establishes CDN behavior. In
+particular, loading `/404.html` locally does not prove an unknown hosted URL
+serves that document with HTTP 404. Hosted deep links, error routing/status,
+headers, caching, and redirects need separate authorized hosting verification;
+these commands make no cloud requests and trigger no deployments.
 
 ## Formatting, linting, and hooks
 
