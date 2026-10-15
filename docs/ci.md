@@ -100,7 +100,7 @@ updating these pins.
 ## Offline infrastructure checks
 
 `Infrastructure (offline)` installs Terraform 1.15.9 using pinned
-[hashicorp/setup-terraform v3.1.2](https://github.com/hashicorp/setup-terraform/releases/tag/v3.1.2).
+[hashicorp/setup-terraform v4.0.1](https://github.com/hashicorp/setup-terraform/releases/tag/v4.0.1).
 It checks recursive formatting, installs the locked AWS 6.21.0 provider with
 `init -backend=false -lockfile=readonly`, validates, then executes explicitly
 mocked plan tests for dev/prod and default-workspace rejection. Both provider
