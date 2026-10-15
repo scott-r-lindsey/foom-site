@@ -65,7 +65,7 @@ export async function manifest(directory: string): Promise<Manifest> {
         const proven =
           key.startsWith('_astro/') &&
           key.split('/').pop()!.includes(`.${sha256}.`);
-        const document = /\.(?:html|txt|xml|json|webmanifest)$/.test(key);
+        const document = /\.(?:html|txt|xml|json|webmanifest)$/i.test(key);
         files.push({
           key,
           bytes: data.length,
@@ -130,12 +130,18 @@ export function cleanupCandidates(
   now: number,
 ): string[] {
   if (!Number.isFinite(now)) throw new Error('Invalid cleanup time');
-  return retired
+  // A reintroduced asset can have multiple ledger entries. The latest
+  // supersession controls eligibility; any uncertain entry blocks deletion.
+  const latest = new Map<string, number>();
+  for (const asset of retired) {
+    const time = Number.isFinite(asset.supersededAt)
+      ? asset.supersededAt
+      : Infinity;
+    latest.set(asset.key, Math.max(latest.get(asset.key) ?? -Infinity, time));
+  }
+  return [...latest]
     .filter(
-      (asset) =>
-        Number.isFinite(asset.supersededAt) &&
-        asset.supersededAt <= now - retentionMs &&
-        !protectedKeys.has(asset.key),
+      ([key, time]) => time <= now - retentionMs && !protectedKeys.has(key),
     )
-    .map((asset) => asset.key);
+    .map(([key]) => key);
 }

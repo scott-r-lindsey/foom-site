@@ -112,3 +112,30 @@ test('immutable keys cannot be overwritten with different bytes', () =>
       /Immutable object changed/,
     );
   }));
+
+test('HTML always revalidates even with a verified digest or uppercase extension', () =>
+  fixture(async (directory) => {
+    await mkdir(join(directory, '_astro'));
+    const data = '<h1>Never immutable</h1>';
+    const hash = createHash('sha256').update(data).digest('hex');
+    await writeFile(join(directory, `_astro/page.${hash}.HTML`), data);
+    const entry = (await manifest(directory)).files.find((file) =>
+      file.key.includes(hash),
+    )!;
+    assert.equal(entry.contentType, 'text/html; charset=utf-8');
+    assert.equal(entry.cacheControl, fresh);
+    assert.equal(entry.phase, 'documents');
+  }));
+
+test('reintroduced assets use latest supersession and uncertain history blocks cleanup', () => {
+  const retired = [
+    { key: 'reintroduced', supersededAt: 0 },
+    { key: 'reintroduced', supersededAt: retentionMs },
+    { key: 'uncertain', supersededAt: 0 },
+    { key: 'uncertain', supersededAt: NaN },
+  ];
+  assert.deepEqual(cleanupCandidates(retired, new Set(), retentionMs), []);
+  assert.deepEqual(cleanupCandidates(retired, new Set(), retentionMs * 2), [
+    'reintroduced',
+  ]);
+});

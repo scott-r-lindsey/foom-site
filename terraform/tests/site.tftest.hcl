@@ -54,7 +54,7 @@ run "environment_plan" {
     error_message = "Security headers must be enabled."
   }
   assert {
-    condition     = aws_cloudfront_cache_policy.site.min_ttl == 0 && aws_cloudfront_cache_policy.site.default_ttl == 0 && aws_cloudfront_cache_policy.site.max_ttl == 31536000
+    condition     = aws_cloudfront_cache_policy.site.min_ttl == 0 && aws_cloudfront_cache_policy.site.default_ttl == 0 && aws_cloudfront_cache_policy.site.max_ttl == 31536000 && aws_cloudfront_cache_policy.site.parameters_in_cache_key_and_forwarded_to_origin[0].query_strings_config[0].query_string_behavior == "none"
     error_message = "CDN must respect freshness and allow proven immutable assets."
   }
   assert {

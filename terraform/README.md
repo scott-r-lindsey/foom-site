@@ -81,7 +81,8 @@ revalidation; live checks must also inspect function response headers.
 [manifest.ts](../scripts/hosting/manifest.ts) and tested with temporary fixtures.
 It records every object key, byte count, lowercase hex SHA-256, base64 S3
 `ChecksumSHA256`, exact Content-Type and Cache-Control. Unknown MIME types,
-unsafe names, symlinks and missing home/error documents fail closed. Extend the
+unsafe names, symlinks and missing home/error documents fail closed. The copied
+`.gitkeep` marker is explicitly excluded. Extend the
 MIME allowlist with tests when new formats land. The publisher must verify the
 manifest again against the checked artifact immediately before uploading;
 checksums bind bytes, not GitHub provenance. The CI artifact trust checks in

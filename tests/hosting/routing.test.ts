@@ -62,3 +62,10 @@ test('rewrite preserves request query without redirect', () =>
   assert.deepEqual(route('/a/', { x: { value: '1' } }).querystring, {
     x: { value: '1' },
   }));
+
+test('bucket listing query still resolves to root index', () => {
+  assert.equal(
+    route('/', { 'list-type': { value: '2' }, prefix: { value: '' } }).uri,
+    '/index.html',
+  );
+});
