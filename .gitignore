@@ -10,3 +10,15 @@ build/
 inspiration/*
 
 /credentials.*
+
+# Astro build output and local caches
+dist/
+.astro/
+.cache/
+.vite/
+.pnpm-store/
+
+# Local environment files
+.env
+.env.*
+!.env.example
