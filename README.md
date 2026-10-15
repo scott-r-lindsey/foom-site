@@ -18,7 +18,7 @@ Commit `pnpm-lock.yaml` whenever dependencies change. The install also runs `pre
 are required. Local `.env` files are ignored.
 
 `pnpm-workspace.yaml` records pnpm's generated release-age exceptions for the
-exact Astro package versions selected during bootstrap.
+exact package versions selected during bootstrap and test-tool setup.
 
 ## Commands
 
@@ -34,6 +34,33 @@ exact Astro package versions selected during bootstrap.
 
 See [tooling coverage and worktree setup](docs/contributing.md#formatting-linting-and-hooks)
 for checked file types, exclusions, and hook behavior.
+
+## Smoke checks
+
+After setup, run these in order:
+
+```sh
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test:artifacts
+pnpm exec playwright install --with-deps chromium
+pnpm test:browser
+```
+
+The browser install is needed once per machine or when Playwright changes. Linux
+CI needs its matching browser and system libraries; the install command above
+handles both (system package installation may need elevated privileges).
+`test:browser` starts and stops Astro preview itself on `127.0.0.1:4327`; leave
+that port free. It runs headless with zero retries. No deployment or credentials
+are involved. To use an already installed Chrome locally, run
+`PLAYWRIGHT_CHANNEL=chrome pnpm test:browser`; record that environment difference.
+CI should use the default matching Playwright Chromium instead.
+
+`test:artifacts` first tests the checker against temporary valid/broken fixtures,
+then checks the existing `dist/`. Both test commands require a fresh production
+build; neither rebuilds it. See [validation scope and limitations](docs/contributing.md#smoke-checks)
+for coverage and the distinction from CDN routing/status verification.
 
 ## Layout
 
