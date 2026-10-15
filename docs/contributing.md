@@ -15,15 +15,15 @@ to [the hosting discovery document](hosting.md), owned by issue
 
 Repository layout:
 
-| Path | Purpose |
-| --- | --- |
-| `src/pages/` | Astro routes and page composition |
-| `src/components/` | Astro components and interactive React islands |
-| `src/assets/` | Source assets processed by the build |
-| `public/` | Files copied unchanged, for stable public paths |
-| `dist/` | Generated static deployment output; never commit |
-| `docs/` | Contributor and operational documentation |
-| `inspiration/` | Optional local, read-only reference symlinks; never commit |
+| Path              | Purpose                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `src/pages/`      | Astro routes and page composition                          |
+| `src/components/` | Astro components and interactive React islands             |
+| `src/assets/`     | Source assets processed by the build                       |
+| `public/`         | Files copied unchanged, for stable public paths            |
+| `dist/`           | Generated static deployment output; never commit           |
+| `docs/`           | Contributor and operational documentation                  |
+| `inspiration/`    | Optional local, read-only reference symlinks; never commit |
 
 Prefer Astro components for content and layout. React components can render
 HTML without client hydration; add a `client:*` directive only when interaction
@@ -48,18 +48,73 @@ Use Node 24.17.0 from `.nvmrc` and pnpm 11.19.0 pinned in `packageManager`.
 Run `corepack enable` before the following commands; see the
 [README](../README.md) for setup.
 
-| Command | Result |
-| --- | --- |
-| `pnpm install --frozen-lockfile` | Install exactly the committed lockfile |
-| `pnpm dev` | Start local development |
-| `pnpm typecheck` | Check Astro and strict TypeScript types |
-| `pnpm build` | Produce static HTML and assets in `dist/` |
-| `pnpm serve` | Preview an existing production build; run build first |
+| Command                          | Result                                                |
+| -------------------------------- | ----------------------------------------------------- |
+| `pnpm install --frozen-lockfile` | Install exactly the committed lockfile                |
+| `pnpm dev`                       | Start local development                               |
+| `pnpm typecheck`                 | Check Astro and strict TypeScript types               |
+| `pnpm lint`                      | Run ESLint, then check formatting with Prettier       |
+| `pnpm lint:fix`                  | Format files, then apply available ESLint fixes       |
+| `pnpm format:check`              | Check formatting without semantic linting             |
+| `pnpm build`                     | Produce static HTML and assets in `dist/`             |
+| `pnpm serve`                     | Preview an existing production build; run build first |
 
-No lint, unit-test, browser-test, or CI command exists at this baseline. Do not
-claim one ran or add tooling solely to make this guide true. Document actual
-commands as their owning issues implement them. No dependency installation is
-needed for documentation-only changes.
+No unit-test, browser-test, or CI command exists yet; those belong to separate
+issues. Do not claim absent checks ran. Documentation-only edits need formatting,
+link/consistency checks, and `git diff --check`.
+
+## Formatting, linting, and hooks
+
+Use two spaces, with Prettier as the formatting authority. JavaScript and
+TypeScript use single quotes and semicolons, matching the original scaffold.
+`pnpm lint` checks the whole worktree, including unstaged changes, and exits
+nonzero for ESLint errors, warnings, parse failures, or formatting differences.
+`pnpm lint:fix` writes formatting and safe ESLint fixes; review its diff and fix
+remaining diagnostics manually. Type errors are checked separately by
+`pnpm typecheck`.
+
+- **Astro:** `prettier-plugin-astro` formats complete components, including
+  frontmatter, templates, scripts, and styles. `eslint-plugin-astro` recommended
+  rules parse Astro syntax and check directives/templates; the TypeScript parser
+  handles frontmatter. Core and TypeScript recommended rules also apply.
+- **JS/TS/JSX/TSX:** Prettier formats these files; ESLint core recommended rules
+  and TypeScript recommended rules (for TS/TSX) catch common mistakes. This is
+  syntax-based linting; it does not add type-aware or React Hooks rule sets.
+  Browser and Node globals are available for the site's mixed tooling/client code.
+- **CSS and Markdown:** Prettier checks formatting and reports parser errors.
+  There is no dedicated semantic CSS or Markdown linter. JSON and YAML
+  configuration also receive formatting checks.
+
+[Biome's language support](https://biomejs.dev/introduction/language-support/)
+was assessed for issue #4: complete Astro support is still experimental and
+Markdown formatting is unfinished. We use
+[Astro's Prettier plugin](https://github.com/withastro/prettier-plugin-astro) and
+[the Astro ESLint plugin](https://github.com/ota-meshi/eslint-plugin-astro)
+to handle Astro syntax explicitly, plus Prettier's built-in Markdown support.
+
+Both tools exclude `inspiration/` (including optional ignored reference symlinks),
+dependencies, build output (`dist/`, `build/`, `out/`), Astro/Vite caches, coverage,
+and test reports. Prettier also respects `.gitignore` and excludes the generated
+pnpm lockfile. Keep the explicit ignore lists in `eslint.config.js` and
+`.prettierignore` aligned when adding generated directories. Unsupported formats
+(such as shell hooks and binary assets) are not formatting targets.
+
+`pnpm install --frozen-lockfile` runs `prepare` (`husky`) to install the
+pre-commit hook. It runs `pnpm typecheck && pnpm lint`, stops on failure, and does
+not build, test in a browser, or contact deployment services. Use Node and pnpm
+from setup in the shell that launches Git; no global tooling installation or
+credentials are required. After manually correcting a failure, rerun the checks
+and commit again.
+
+Husky sets repository-local `core.hooksPath` to the relative `.husky/_` path.
+Linked worktrees normally share that Git setting, but each resolves the path
+inside its own checkout and needs its own install. Run the frozen install in each
+worktree after checking out this tooling. Other branches without `.husky/` cannot
+run this hook until they integrate the tooling. No global Git config is changed.
+For an intentionally script-free install, `pnpm install --ignore-scripts` skips
+hook setup; run `pnpm prepare` afterward to install it. `HUSKY=0` explicitly opts
+out of hook installation/execution in environments that need it; it is not the
+normal contributor setup.
 
 ## Issues and isolated work
 

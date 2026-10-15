@@ -13,7 +13,8 @@ corepack enable
 pnpm install --frozen-lockfile
 ```
 
-Commit `pnpm-lock.yaml` whenever dependencies change. No environment variables
+Commit `pnpm-lock.yaml` whenever dependencies change. The install also runs `prepare` to install the Husky pre-commit hook, which runs
+`pnpm typecheck` and `pnpm lint`. No environment variables
 are required. Local `.env` files are ignored.
 
 `pnpm-workspace.yaml` records pnpm's generated release-age exceptions for the
@@ -21,12 +22,18 @@ exact Astro package versions selected during bootstrap.
 
 ## Commands
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Start the local development server. |
-| `pnpm typecheck` | Check Astro files, TypeScript, and React TSX. |
-| `pnpm build` | Generate the static production site in `dist/`. |
-| `pnpm serve` | Preview an existing production build locally. Run `pnpm build` first. |
+| Command             | Purpose                                                               |
+| ------------------- | --------------------------------------------------------------------- |
+| `pnpm dev`          | Start the local development server.                                   |
+| `pnpm typecheck`    | Check Astro files, TypeScript, and React TSX.                         |
+| `pnpm lint`         | Check code with ESLint and formatting with Prettier.                  |
+| `pnpm lint:fix`     | Format files and apply available ESLint fixes.                        |
+| `pnpm format:check` | Check formatting alone.                                               |
+| `pnpm build`        | Generate the static production site in `dist/`.                       |
+| `pnpm serve`        | Preview an existing production build locally. Run `pnpm build` first. |
+
+See [tooling coverage and worktree setup](docs/contributing.md#formatting-linting-and-hooks)
+for checked file types, exclusions, and hook behavior.
 
 ## Layout
 

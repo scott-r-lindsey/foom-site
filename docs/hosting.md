@@ -42,23 +42,23 @@ Variable names in this table are proposed configuration contracts, not existing
 Terraform declarations or GitHub settings. The owner must approve the final
 values and storage locations before bootstrap or provisioning.
 
-| Input | Status and value/convention | Owner confirmation needed |
-| --- | --- | --- |
-| Repository and environment labels | Confirmed: `scott-r-lindsey/foom-site`; `dev`, `prod` | None for these labels |
-| Production domains | Owner input: `<PROD_DOMAIN>`, optional `<PROD_ALIAS_DOMAINS>` | Canonical hostname, aliases, redirects, domain ownership and registrar contact |
-| Development domain | Owner input: `<DEV_DOMAIN>` | Dedicated hostname; proposed subdomain of the approved production domain |
-| AWS account | Owner input: `<AWS_ACCOUNT_ID>` | Target account, whether both environments share it, accountable administrator |
-| Application AWS region | Owner input: `<AWS_REGION>` | Bucket region and any regional constraints |
-| TLS certificate region | Architecture constraint: CloudFront ACM certificate in `us-east-1` | Confirm DNS validation authority for every alias |
-| DNS zone | Owner input: `<DNS_ZONE_ID>`, `<DNS_ZONE_NAME>` | Zone/account owner, delegation and permission to manage only Foom records; proposed Route 53 public zone |
-| State backend | Owner input: `<STATE_BUCKET>`, `<STATE_REGION>`, optional `<STATE_KMS_KEY_ARN>` | Existing versus new shared bucket, encryption, versioning/backups, lock support, administrators and recovery owner |
-| State key scheme | Proposal: S3 backend `workspace_key_prefix = "foom-site"`, `key = "terraform.tfstate"`; only `dev`/`prod` workspaces | Approve effective keys `foom-site/dev/terraform.tfstate` and `foom-site/prod/terraform.tfstate`; corresponding `.tflock` objects; reject `default` |
-| Resource naming | Proposal: prefix `foom-site-<ENV>`; bucket `foom-site-<ENV>-<AWS_ACCOUNT_ID>-<AWS_REGION>` | Confirm global bucket uniqueness and naming policy; names remain placeholders until approved |
-| Resource tags | Proposal: `Application=foom-site`, `Environment=dev\|prod`, `Repository=scott-r-lindsey/foom-site`, `ManagedBy=Terraform` for environment resources | Approve required organizational tags; bootstrap resources have a distinct management owner |
-| Account GitHub OIDC provider | Owner input: `<GITHUB_OIDC_PROVIDER_ARN>` for `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com` | Existing shared provider ownership or authorized creation; exact repository subject format |
-| Separate deploy roles | Confirmed separation; proposed names `foom-site-github-development-deploy`, `foom-site-github-production-deploy` | Approve `<DEV_ROLE_ARN>`, `<PROD_ROLE_ARN>` and reviewed trust/permission policies |
-| GitHub repository variables | Proposal: `DEV_AWS_DEPLOY_ROLE_ARN=<DEV_ROLE_ARN>`, `PROD_AWS_DEPLOY_ROLE_ARN=<PROD_ROLE_ARN>`, `AWS_REGION=<AWS_REGION>` | Repository administrator sets approved non-secret values; backend/domain/zone inputs use reviewed configuration, not hidden defaults |
-| Release retention and access | Owner input: `<RETENTION_WINDOW>`, `<BOOTSTRAP_OWNER>`, `<RECOVERY_OWNER>` | Approve rollback window, cleanup authority, deployment approval and recovery access |
+| Input                             | Status and value/convention                                                                                                                         | Owner confirmation needed                                                                                                                          |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository and environment labels | Confirmed: `scott-r-lindsey/foom-site`; `dev`, `prod`                                                                                               | None for these labels                                                                                                                              |
+| Production domains                | Owner input: `<PROD_DOMAIN>`, optional `<PROD_ALIAS_DOMAINS>`                                                                                       | Canonical hostname, aliases, redirects, domain ownership and registrar contact                                                                     |
+| Development domain                | Owner input: `<DEV_DOMAIN>`                                                                                                                         | Dedicated hostname; proposed subdomain of the approved production domain                                                                           |
+| AWS account                       | Owner input: `<AWS_ACCOUNT_ID>`                                                                                                                     | Target account, whether both environments share it, accountable administrator                                                                      |
+| Application AWS region            | Owner input: `<AWS_REGION>`                                                                                                                         | Bucket region and any regional constraints                                                                                                         |
+| TLS certificate region            | Architecture constraint: CloudFront ACM certificate in `us-east-1`                                                                                  | Confirm DNS validation authority for every alias                                                                                                   |
+| DNS zone                          | Owner input: `<DNS_ZONE_ID>`, `<DNS_ZONE_NAME>`                                                                                                     | Zone/account owner, delegation and permission to manage only Foom records; proposed Route 53 public zone                                           |
+| State backend                     | Owner input: `<STATE_BUCKET>`, `<STATE_REGION>`, optional `<STATE_KMS_KEY_ARN>`                                                                     | Existing versus new shared bucket, encryption, versioning/backups, lock support, administrators and recovery owner                                 |
+| State key scheme                  | Proposal: S3 backend `workspace_key_prefix = "foom-site"`, `key = "terraform.tfstate"`; only `dev`/`prod` workspaces                                | Approve effective keys `foom-site/dev/terraform.tfstate` and `foom-site/prod/terraform.tfstate`; corresponding `.tflock` objects; reject `default` |
+| Resource naming                   | Proposal: prefix `foom-site-<ENV>`; bucket `foom-site-<ENV>-<AWS_ACCOUNT_ID>-<AWS_REGION>`                                                          | Confirm global bucket uniqueness and naming policy; names remain placeholders until approved                                                       |
+| Resource tags                     | Proposal: `Application=foom-site`, `Environment=dev\|prod`, `Repository=scott-r-lindsey/foom-site`, `ManagedBy=Terraform` for environment resources | Approve required organizational tags; bootstrap resources have a distinct management owner                                                         |
+| Account GitHub OIDC provider      | Owner input: `<GITHUB_OIDC_PROVIDER_ARN>` for `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`                           | Existing shared provider ownership or authorized creation; exact repository subject format                                                         |
+| Separate deploy roles             | Confirmed separation; proposed names `foom-site-github-development-deploy`, `foom-site-github-production-deploy`                                    | Approve `<DEV_ROLE_ARN>`, `<PROD_ROLE_ARN>` and reviewed trust/permission policies                                                                 |
+| GitHub repository variables       | Proposal: `DEV_AWS_DEPLOY_ROLE_ARN=<DEV_ROLE_ARN>`, `PROD_AWS_DEPLOY_ROLE_ARN=<PROD_ROLE_ARN>`, `AWS_REGION=<AWS_REGION>`                           | Repository administrator sets approved non-secret values; backend/domain/zone inputs use reviewed configuration, not hidden defaults               |
+| Release retention and access      | Owner input: `<RETENTION_WINDOW>`, `<BOOTSTRAP_OWNER>`, `<RECOVERY_OWNER>`                                                                          | Approve rollback window, cleanup authority, deployment approval and recovery access                                                                |
 
 Distribution IDs and CloudFront hostnames should come from environment outputs,
 not copied reference values. No AWS access keys, private keys, credentials, or
@@ -75,11 +75,11 @@ CloudFront distribution. Serve HTTPS with appropriate security headers. Public
 S3 website hosting is not part of this contract. No Lambda, API Gateway, or
 DynamoDB resources are required.
 
-| Trigger | Environment and state | Credentials and result |
-| --- | --- | --- |
+| Trigger                             | Environment and state                      | Credentials and result                                        |
+| ----------------------------------- | ------------------------------------------ | ------------------------------------------------------------- |
 | Same-repository PR targeting `main` | Shared `dev`; only dev state and resources | Development role; deploy exact validated development artifact |
-| Push to `main` | `prod`; only prod state and resources | Production role; deploy exact validated production artifact |
-| Fork PR or other branch/event | No deployment | Validation only, no deployment role or OIDC credential job |
+| Push to `main`                      | `prod`; only prod state and resources      | Production role; deploy exact validated production artifact   |
+| Fork PR or other branch/event       | No deployment                              | Validation only, no deployment role or OIDC credential job    |
 
 Shared dev is one mutable preview URL, not a per-PR environment. A deployment
 from another PR replaces the visible preview; closing one PR must not destroy
@@ -97,11 +97,11 @@ rollback must be explicit and serialized through the same environment lock.
 
 ## State, ownership, and bootstrap boundary
 
-| Boundary | Resources and responsibility | Recovery/management contract |
-| --- | --- | --- |
+| Boundary                                        | Resources and responsibility                                                                                                   | Recovery/management contract                                                                                                                                                            |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Shared prerequisites, outside environment state | AWS account, domain registration/delegation, hosted zone, state bucket/encryption/backup/locking, account GitHub OIDC provider | Account/DNS/backend owners confirm inventory and restore these independently. Existing ownership is unknown; approve creation separately if absent. Never let app teardown remove them. |
-| Foom bootstrap, outside environment state | Separate dev/prod IAM roles, trust and permission policies, GitHub variables and any environment protection settings | `<BOOTSTRAP_OWNER>` with authorized administrative access creates/restores these before CI can authenticate. App roles cannot grant themselves access or change their own trust. |
-| Foom environment state, separate for dev/prod | Site bucket/content ownership, OAC, distribution, routing/cache/security policies, ACM certificate and Foom DNS records | #10 defines lifecycle and content ownership; #11 publishes through the matching role. No resource or object is managed by two states or competing publishers. |
+| Foom bootstrap, outside environment state       | Separate dev/prod IAM roles, trust and permission policies, GitHub variables and any environment protection settings           | `<BOOTSTRAP_OWNER>` with authorized administrative access creates/restores these before CI can authenticate. App roles cannot grant themselves access or change their own trust.        |
+| Foom environment state, separate for dev/prod   | Site bucket/content ownership, OAC, distribution, routing/cache/security policies, ACM certificate and Foom DNS records        | #10 defines lifecycle and content ownership; #11 publishes through the matching role. No resource or object is managed by two states or competing publishers.                           |
 
 Proposed state backend requires encrypted transport/storage, versioned state
 backups and S3 lock files. Dev permissions cover only its effective state and
