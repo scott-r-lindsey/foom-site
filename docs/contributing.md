@@ -59,6 +59,10 @@ Run `corepack enable` before the following commands; see the
 | `pnpm build`                     | Produce static HTML and assets in `dist/`             |
 | `pnpm serve`                     | Preview an existing production build; run build first |
 
+`pnpm test:hosting` checks offline routing and publication metadata/retention.
+`pnpm hosting:manifest` describes an existing build; see
+[the infrastructure guide](../terraform/README.md).
+
 `pnpm test:artifacts` and `pnpm test:browser` validate an existing production
 build; see the smoke checks below. [Actions CI](ci.md) runs these checks for every
 pull request and push to main. Documentation-only edits need formatting,

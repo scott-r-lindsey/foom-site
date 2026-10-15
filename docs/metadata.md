@@ -22,7 +22,8 @@ requires a new build and validation of that exact artifact.
 
 Production additionally requires HTTPS and rejects localhost/loopback origins.
 This validation checks URL structure; it does not confirm DNS, ownership, or
-deployment. No final Foom domain has been selected. `NODE_ENV=production`,
+deployment. Approved deployment origins are `https://foom-term.com` and
+`https://dev.foom-term.com`; see [hosting](hosting.md). `NODE_ENV=production`,
 `astro build`, or `--mode production` alone does **not** enable indexing.
 
 Local build (no origin needed, noindex):
@@ -92,5 +93,5 @@ and reject invalid environment names, malformed origins, non-HTTP(S) schemes,
 credentialed origins, origins with paths/query/fragment, and HTTP/loopback
 production origins. A default build must succeed with localhost and noindex.
 Run any browser checks headless. Rebuild with the intended settings after
-verification; never commit `dist/` or example-origin output. Final domain and
+verification; never commit `dist/` or example-origin output. Live domain and
 HTTP routing verification belongs to deployment, not this local build check.

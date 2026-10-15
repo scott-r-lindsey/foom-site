@@ -16,7 +16,9 @@
     "format:check": "prettier . --check",
     "prepare": "husky",
     "test:artifacts": "node --test tests/artifacts/check.test.ts && node tests/artifacts/check.ts",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "test:hosting": "node --test tests/hosting/*.test.ts",
+    "hosting:manifest": "node scripts/hosting/build-manifest.ts"
   },
   "dependencies": {
     "@astrojs/react": "7.1.0",
