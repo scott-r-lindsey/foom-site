@@ -1,21 +1,19 @@
 # Contributing to foom-site
 
-This repository will contain a static promotional site built with Astro, React
-integration, and strict TypeScript. At the documentation baseline, bootstrap
-issue [#2](https://github.com/scott-r-lindsey/foom-site/issues/2) is still pending:
-the layout and commands below are planned, not available checks. Update this
-guide when implementation lands; use the committed package scripts and pinned
-tool versions as the source of truth.
+This repository contains a static promotional site built with Astro, React
+integration, and strict TypeScript. The scaffold from issue
+[#2](https://github.com/scott-r-lindsey/foom-site/issues/2) is implemented.
+Use the committed package scripts and pinned tool versions as the source of truth.
 
 ## Architecture and layout
 
 Astro renders pages to static HTML in `dist/`, with directory-style routes such
 as `about/index.html`. Deployment serves that output as files; no runtime server
 or hosting adapter is required. Hosting inputs and operational details belong
-to the future `docs/hosting.md`, owned by issue
+to [the hosting discovery document](hosting.md), owned by issue
 [#9](https://github.com/scott-r-lindsey/foom-site/issues/9).
 
-Planned repository layout:
+Repository layout:
 
 | Path | Purpose |
 | --- | --- |
@@ -44,13 +42,13 @@ Do not present inferred capabilities, placeholder screenshots, or planned
 features as shipped behavior. Ask for missing product facts rather than inventing
 claims. Reference projects may inform implementation, but remain unchanged.
 
-## Planned commands
+## Commands
 
-Bootstrap #2 will pin pnpm in `packageManager` and a compatible Node version.
-Use those committed pins; do not substitute arbitrary versions. Once #2 lands,
-the intended workflow from the repository root is:
+Use Node 24.17.0 from `.nvmrc` and pnpm 11.19.0 pinned in `packageManager`.
+Run `corepack enable` before the following commands; see the
+[README](../README.md) for setup.
 
-| Command | Intended result (pending #2) |
+| Command | Result |
 | --- | --- |
 | `pnpm install --frozen-lockfile` | Install exactly the committed lockfile |
 | `pnpm dev` | Start local development |
@@ -107,8 +105,9 @@ and results. Fix change-caused CI failures; record evidence for unrelated failur
 and continue independent work. Hand off a draft if blocked rather than waiting
 indefinitely. No CI exists at this baseline, so leave the PR draft for orchestrator
 review with local validation; do not describe CI as passing. When CI exists,
-required checks must be green before marking ready. Do not merge or enable
-auto-merge, delete branches, or remove worktrees.
+required checks must be green before marking ready. Child implementers must not merge or enable auto-merge, delete branches, or
+remove worktrees. An explicitly authorized integration owner may review and merge
+PRs, including locally validated drafts while CI is not yet configured.
 
 Keep secrets, generated output, and local files out of commits as described in
 `AGENTS.md`. Use placeholders for required variables. Infrastructure and hosting
