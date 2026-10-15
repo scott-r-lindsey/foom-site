@@ -12,7 +12,14 @@ const sha256 = (file) =>
 const output = '.cache/ci-artifact';
 mkdirSync(output, { recursive: true });
 // Archive the existing checked output; never rebuild during packaging/deployment.
-execFileSync('tar', ['-czf', `${output}/dist.tar.gz`, '-C', 'dist', '.']);
+execFileSync('tar', [
+  '--exclude=.gitkeep',
+  '-czf',
+  `${output}/dist.tar.gz`,
+  '-C',
+  'dist',
+  '.',
+]);
 const deployable = [
   'https://dev.foom-term.com',
   'https://foom-term.com',

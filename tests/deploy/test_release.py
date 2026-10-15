@@ -175,6 +175,38 @@ class BoundaryTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, 'File manifest'):
                         r.unpack(data, r.digest(data), target)
 
+    def test_packaging_excludes_markers_and_roundtrips(self):
+        import os
+        import subprocess
+        Path('.cache').mkdir(exist_ok=True)
+        script = str(Path('.github/scripts/package-artifact.mjs').resolve())
+        with tempfile.TemporaryDirectory(dir='.cache') as temp:
+            root = Path(temp).resolve()
+            (root / 'dist').mkdir()
+            (root / 'dist/.gitkeep').write_bytes(b'')
+            (root / 'dist/index.html').write_text('<h1>Home</h1>')
+            (root / 'dist/404.html').write_text('<h1>Missing</h1>')
+            (root / 'package.json').write_text('{"packageManager":"pnpm@11.19.0"}')
+            (root / 'pnpm-lock.yaml').write_text('fixture lock')
+            manifest_script = "import {manifest} from './scripts/hosting/manifest.ts'; console.log(JSON.stringify(await manifest(process.argv[1])));"
+            files = r.command('node', '--input-type=module', '-e', manifest_script, str(root / 'dist'))
+            (root / '.cache/hosting').mkdir(parents=True)
+            (root / '.cache/hosting/files.json').write_bytes(files)
+            env = dict(os.environ, GITHUB_REPOSITORY=r.REPO, GITHUB_EVENT_NAME='push',
+                       GITHUB_SHA='source', PR_HEAD_SHA='source', GITHUB_RUN_ID='1',
+                       GITHUB_RUN_ATTEMPT='1', SITE_ENV='production', SITE_ORIGIN='https://foom-term.com')
+            subprocess.check_call(['node', script], cwd=root, env=env)
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, 'w') as archive:
+                for file in (root / '.cache/ci-artifact').iterdir():
+                    archive.write(file, file.name)
+            unpacked = root / 'unpacked'
+            unpacked.mkdir()
+            identity, actual = r.unpack(buf.getvalue(), r.digest(buf.getvalue()), unpacked)
+            self.assertTrue(identity['deployable'])
+            self.assertEqual(actual, json.loads(files))
+            self.assertFalse((unpacked / '.gitkeep').exists())
+
     def test_settings_and_source_identity(self):
         expected = dict(sourceSha='merge', headSha='head', baseSha='base')
         manifest = dict(schemaVersion=1, purpose='deployment', deployable=True,
