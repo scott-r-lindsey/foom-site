@@ -41,3 +41,10 @@ server or hosting adapter is configured.
 
 `inspiration/` remains ignored and is read-only reference material. A linked
 worktree may not contain its local symlinks.
+
+## Contributing
+
+Read [the contributor guide](docs/contributing.md) for architecture, commands,
+validation, and issue/worktree conventions, and [AGENTS.md](AGENTS.md) for
+repository instructions. Hosting requirements and outstanding inputs are recorded
+in [the hosting discovery document](docs/hosting.md).

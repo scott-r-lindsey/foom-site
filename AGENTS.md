@@ -36,7 +36,9 @@ Keep guidance and commands aligned with the implementation as it lands.
   Triage CI failures; fix those caused by the change and link evidence for
   unrelated failures. Never claim an absent check passed. Keep the PR draft when
   no CI exists; otherwise mark ready only when required CI is green.
-- Do not merge, enable auto-merge, delete branches, or remove worktrees.
+- Child implementers must not merge, enable auto-merge, delete branches, or
+  remove worktrees. An explicitly authorized integration owner may review and
+  merge PRs, including locally validated drafts before CI is configured.
 - Do not trigger deployments, provision resources, use real cloud credentials,
   or probe cloud APIs. Never run Terraform apply, destroy, import, or state
   commands. Infrastructure validation must be offline or explicitly mocked;
