@@ -16,12 +16,16 @@ The `Quality gate` requires the entire matrix and mocked infrastructure checks.
 Only real-origin artifacts have `purpose: deployment`, `deployable: true` and the
 #10 `files.json`. The checked output is archived without rebuilding.
 
-The dependent job calls `.github/workflows/publish.yml@main`. That reusable
-workflow must exist on main before enablement; it is deliberately never loaded
-from a PR branch. It checks out main with persisted Git credentials disabled,
+The dependent job calls the local `.github/workflows/publish.yml` reusable
+workflow so the initial preparation PR can run quality checks before the file
+exists on main. Its credential-bearing job checks out **main**, not the candidate,
+with persisted Git credentials disabled,
 installs no project dependencies, and executes only trusted main Python/Node
 standard-library tools. Downloaded output is data, never executable code.
-There is no `pull_request_target`, privileged `workflow_run`, fork credential
+Before OIDC, main tools also compare both workflow definitions at the selected
+source with main; workflow-editing PRs require integration before publication.
+The local reusable definition is a reviewed code contract, not protection against
+a malicious same-repository writer replacing credential steps. There is no `pull_request_target`, privileged `workflow_run`, fork credential
 path, PR Terraform execution, or GitHub Environment subject substitution.
 Same-repository writers remain trusted with dev privileges as described in
 hosting discovery; a malicious writer can modify a PR workflow to request its
@@ -68,7 +72,9 @@ non-secret identifiers. Enable **only** `DEV_DEPLOY_ENABLED=true` after review;
 leave `PROD_DEPLOY_ENABLED` absent until authorized dev checks and #12 pass.
 Absent/other values disable the respective job. Never use cloud keys or `.env`.
 Repository variables may be changed only by the authorized operator; this task
-has not changed them. Review main protection and reusable-workflow write access.
+has not changed them. Review main protection and workflow write access. All credential-job steps
+must continue to use trusted main tools; never add PR checkout, dependency
+installation, downloaded executable content or candidate Terraform there.
 
 Content publication needs only the publication policy. Infrastructure is
 **reviewed-main only**, never the candidate PR's Terraform. Ordinarily leave

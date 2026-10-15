@@ -273,6 +273,14 @@ def main():
     require(gate(run), 'Quality gate must succeed')
     expected = eligible(run, environment, os.environ.get('PR_NUMBER') or None)
     reject_newer(run, environment)
+    # A workflow-editing PR may validate but must not publish. Run only the main
+    # definition/tool contract, even though GitHub resolves this local reusable
+    # workflow while parsing the initial bootstrap PR.
+    for workflow in ('quality.yml', 'publish.yml'):
+        path = f'.github/workflows/{workflow}'
+        source = gh(f"contents/{path}?ref={expected['sourceSha']}")
+        require(base64.b64decode(source['content']) == Path(path).read_bytes(),
+                'Workflow changes require main integration before publication')
     artifact_id = int(os.environ['ARTIFACT_ID'])
     metadata = gh(f'actions/artifacts/{artifact_id}')
     require(metadata['workflow_run']['id'] == run['id'] and not metadata['expired'] and

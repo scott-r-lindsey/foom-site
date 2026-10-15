@@ -126,4 +126,4 @@ jobs:
       actions: read
       pull-requests: read
       id-token: write
-    uses: scott-r-lindsey/foom-site/.github/workflows/publish.yml@main
+    uses: ./.github/workflows/publish.yml
