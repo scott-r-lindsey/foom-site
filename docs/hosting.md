@@ -1,24 +1,25 @@
 # Hosting discovery and AWS bootstrap contract
 
-Status: discovery draft for [issue #9](https://github.com/scott-r-lindsey/foom-site/issues/9).
-No deployment-specific AWS or domain values have been approved. This document
-records requirements and proposed conventions, not evidence of provisioned
-resources. Required owner inputs remain open; #9 is not complete and
-[infrastructure #10](https://github.com/scott-r-lindsey/foom-site/issues/10)
-remains blocked. Implementation belongs to #10 and
-[deployment #11](https://github.com/scott-r-lindsey/foom-site/issues/11).
+Status: configuration discovery complete for [issue #9](https://github.com/scott-r-lindsey/foom-site/issues/9),
+using owner approval recorded on **2026-10-15**. This contract supplies inputs for
+[infrastructure #10](https://github.com/scott-r-lindsey/foom-site/issues/10) and
+[deployment #11](https://github.com/scott-r-lindsey/foom-site/issues/11). It does
+not establish that live resources exist or authorize deployment. #10 can begin
+once #9 is closed and this contract is integrated into its base.
 
 ## Evidence and status vocabulary
 
-- **Confirmed requirement**: supplied by the issue or assigned hosting brief.
-- **Proposal**: a concrete convention to review before implementation.
-- **Owner input**: a deployment-specific value or decision still required.
+- **Confirmed configuration**: owner-approved values recorded in #9 on
+  2026-10-15, including explicitly approved reuse of shared AWS identities.
+- **Implementation default**: routine Foom naming or operational choices made
+  here for #10/#11; not a claim that resources or settings already exist.
+- **Operational verification**: live checks and authorization required before
+  deployment, outside this discovery task.
 
-The repository at discovery base `9677b067085708fac3b907284091da6c17805cd2`
-contains only `.gitignore`; it supplies no hosting configuration or inventory.
-No cloud calls, credential discovery, provisioning, or Terraform operations
-were used for discovery. Shared resources described below are prerequisites to
-confirm, not resources known to exist in Foom's account.
+The implementation base is `cb0a9b9df87010ebd967538740117c3977f0291b`, with
+#2–8 integrated. No cloud calls, credential discovery, provisioning, or Terraform
+operations were used for discovery. GitHub OIDC evidence below was supplied by
+the orchestrator's read-only repository API inspection, not a cloud probe.
 
 Read-only local patterns inspected in `inspiration/crab-attack-ii/`:
 
@@ -29,36 +30,46 @@ Read-only local patterns inspected in `inspiration/crab-attack-ii/`:
 - `.github/workflows/deploy.yml`: environment selection and deployment handoff.
 
 The reference may be available through the local inspiration symlink; it is
-not a tracked dependency. Its account, zone, domains, buckets, role ARNs, and
-immutable repository IDs are not approved Foom inputs. Its API/score backend
-is outside this promotional site's scope. Its root-index-only routing/cache
-handling, independent build/deploy checks, and apply cancellation must not be
-carried over; the multipage and validation requirements below supersede them.
+not a tracked dependency. Only the account, state bucket and OIDC provider
+explicitly approved below are reused. Its zone, application resources, role
+identities, domains and immutable repository ID must not be copied. Its API/score
+backend is outside this promotional site's scope. Its root-index-only
+routing/cache handling, independent build/deploy checks, and apply cancellation
+must not be carried over; the multipage and validation requirements below
+supersede them.
 
-## Required inputs and proposed names
+## Confirmed inputs and implementation defaults
 
-Angle-bracket values are unresolved placeholders, never executable defaults.
-Variable names in this table are proposed configuration contracts, not existing
-Terraform declarations or GitHub settings. The owner must approve the final
-values and storage locations before bootstrap or provisioning.
+These are configuration contracts for #10/#11, not existing Terraform declarations
+or verified GitHub settings. Scott is the accountable account/DNS contact and
+bootstrap, backend and recovery owner; shared resources retain their external
+management ownership.
 
-| Input                             | Status and value/convention                                                                                                                         | Owner confirmation needed                                                                                                                          |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Repository and environment labels | Confirmed: `scott-r-lindsey/foom-site`; `dev`, `prod`                                                                                               | None for these labels                                                                                                                              |
-| Production domains                | Owner input: `<PROD_DOMAIN>`, optional `<PROD_ALIAS_DOMAINS>`                                                                                       | Canonical hostname, aliases, redirects, domain ownership and registrar contact                                                                     |
-| Development domain                | Owner input: `<DEV_DOMAIN>`                                                                                                                         | Dedicated hostname; proposed subdomain of the approved production domain                                                                           |
-| AWS account                       | Owner input: `<AWS_ACCOUNT_ID>`                                                                                                                     | Target account, whether both environments share it, accountable administrator                                                                      |
-| Application AWS region            | Owner input: `<AWS_REGION>`                                                                                                                         | Bucket region and any regional constraints                                                                                                         |
-| TLS certificate region            | Architecture constraint: CloudFront ACM certificate in `us-east-1`                                                                                  | Confirm DNS validation authority for every alias                                                                                                   |
-| DNS zone                          | Owner input: `<DNS_ZONE_ID>`, `<DNS_ZONE_NAME>`                                                                                                     | Zone/account owner, delegation and permission to manage only Foom records; proposed Route 53 public zone                                           |
-| State backend                     | Owner input: `<STATE_BUCKET>`, `<STATE_REGION>`, optional `<STATE_KMS_KEY_ARN>`                                                                     | Existing versus new shared bucket, encryption, versioning/backups, lock support, administrators and recovery owner                                 |
-| State key scheme                  | Proposal: S3 backend `workspace_key_prefix = "foom-site"`, `key = "terraform.tfstate"`; only `dev`/`prod` workspaces                                | Approve effective keys `foom-site/dev/terraform.tfstate` and `foom-site/prod/terraform.tfstate`; corresponding `.tflock` objects; reject `default` |
-| Resource naming                   | Proposal: prefix `foom-site-<ENV>`; bucket `foom-site-<ENV>-<AWS_ACCOUNT_ID>-<AWS_REGION>`                                                          | Confirm global bucket uniqueness and naming policy; names remain placeholders until approved                                                       |
-| Resource tags                     | Proposal: `Application=foom-site`, `Environment=dev\|prod`, `Repository=scott-r-lindsey/foom-site`, `ManagedBy=Terraform` for environment resources | Approve required organizational tags; bootstrap resources have a distinct management owner                                                         |
-| Account GitHub OIDC provider      | Owner input: `<GITHUB_OIDC_PROVIDER_ARN>` for `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`                           | Existing shared provider ownership or authorized creation; exact repository subject format                                                         |
-| Separate deploy roles             | Confirmed separation; proposed names `foom-site-github-development-deploy`, `foom-site-github-production-deploy`                                    | Approve `<DEV_ROLE_ARN>`, `<PROD_ROLE_ARN>` and reviewed trust/permission policies                                                                 |
-| GitHub repository variables       | Proposal: `DEV_AWS_DEPLOY_ROLE_ARN=<DEV_ROLE_ARN>`, `PROD_AWS_DEPLOY_ROLE_ARN=<PROD_ROLE_ARN>`, `AWS_REGION=<AWS_REGION>`                           | Repository administrator sets approved non-secret values; backend/domain/zone inputs use reviewed configuration, not hidden defaults               |
-| Release retention and access      | Owner input: `<RETENTION_WINDOW>`, `<BOOTSTRAP_OWNER>`, `<RECOVERY_OWNER>`                                                                          | Approve rollback window, cleanup authority, deployment approval and recovery access                                                                |
+| Input                        | Value and status                                                                                                                                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repository and environments  | Confirmed: `scott-r-lindsey/foom-site`; `dev`, `prod`                                                                                                                                                |
+| Production origin            | Confirmed: `https://foom-term.com`; sole production alias/certificate name `foom-term.com`                                                                                                           |
+| Development origin           | Confirmed: `https://dev.foom-term.com`; sole dev alias/certificate name `dev.foom-term.com`                                                                                                          |
+| AWS account                  | Confirmed shared account: `225319921763`                                                                                                                                                             |
+| Application region           | Confirmed: `us-west-2` for both application buckets                                                                                                                                                  |
+| TLS certificate region       | Confirmed: `us-east-1` for CloudFront ACM certificates                                                                                                                                               |
+| DNS zone                     | Confirmed new Foom public zone: `foom-term.com`, `Z0451547IUIBRZP42UO4`; separate from Crab Attack, managed outside environment state                                                                |
+| State backend                | Confirmed shared bucket `terraform-state-xxx`, region `us-east-1`; implementation requires encryption, versioning/backups and S3 lock files; live settings unverified                                |
+| State key scheme             | Default: `workspace_key_prefix = "foom-site"`, `key = "terraform.tfstate"`; only `dev`/`prod`, reject `default`                                                                                      |
+| Effective state objects      | `s3://terraform-state-xxx/foom-site/dev/terraform.tfstate` and `s3://terraform-state-xxx/foom-site/prod/terraform.tfstate`; each lock object appends `.tflock`                                       |
+| Resource naming              | Default prefix `foom-site-<ENV>` for OAC, distribution comment, routing functions and custom policies; bucket names below; global uniqueness remains unverified                                      |
+| Dev application bucket       | Planned: `foom-site-dev-225319921763-us-west-2`                                                                                                                                                      |
+| Prod application bucket      | Planned: `foom-site-prod-225319921763-us-west-2`                                                                                                                                                     |
+| Resource tags                | Default: `Application=foom-site`, `Environment=dev` or `prod`, `Repository=scott-r-lindsey/foom-site`, `ManagedBy=Terraform` for environment resources; bootstrap uses its separate management owner |
+| Account GitHub OIDC provider | Confirmed reuse: `arn:aws:iam::225319921763:oidc-provider/token.actions.githubusercontent.com`, audience `sts.amazonaws.com`                                                                         |
+| Development role             | Planned: `foom-site-github-development-deploy`, ARN `arn:aws:iam::225319921763:role/foom-site-github-development-deploy`                                                                             |
+| Production role              | Planned: `foom-site-github-production-deploy`, ARN `arn:aws:iam::225319921763:role/foom-site-github-production-deploy`                                                                               |
+| GitHub repository variables  | Default: `DEV_AWS_DEPLOY_ROLE_ARN` and `PROD_AWS_DEPLOY_ROLE_ARN` set to the respective planned ARNs, `AWS_REGION=us-west-2`; reviewed configuration holds domain/zone/backend inputs                |
+| Retention and access         | Default: retain prior fingerprinted assets and compatible rollback artifacts/metadata for at least 30 days after supersession; Scott owns cleanup, bootstrap and recovery authorization              |
+
+`www.foom-term.com` is an optional follow-up, not an approved alias or prerequisite.
+Adding it later requires an explicit domain/redirect decision, certificate and
+DNS changes. The current scope includes only the confirmed apex and dev names.
 
 Distribution IDs and CloudFront hostnames should come from environment outputs,
 not copied reference values. No AWS access keys, private keys, credentials, or
@@ -84,61 +95,88 @@ DynamoDB resources are required.
 Shared dev is one mutable preview URL, not a per-PR environment. A deployment
 from another PR replaces the visible preview; closing one PR must not destroy
 shared dev. The run summary must identify URL, PR/commit, and deployed artifact.
-Separate buckets and state prevent dev changes from modifying prod.
+Separate buckets, state and role permissions must prevent dev changes from
+modifying prod.
 
 Use one deployment concurrency group per environment across all PRs/runs,
-covering apply and publication. Never cancel an in-progress apply to favor a
-newer build. Backend state locking is required in addition to workflow
-serialization. A stale queued build must be rejected before mutation; GitHub
-queue order alone is not a freshness guarantee. #11 must define and enforce
-ordering across PRs for shared dev, plus the latest eligible `main` commit for
-prod. Superseded builds can be discarded before entering mutation; intentional
-rollback must be explicit and serialized through the same environment lock.
+covering apply and publication, with in-progress mutation cancellation disabled.
+Never cancel an in-progress apply to favor a newer build. Backend state locking
+is required in addition to workflow serialization.
+
+The shared-dev default is **latest eligible run**, ordered by the original
+validation run's creation time across all eligible same-repository PRs (run ID
+breaks ties); a retry retains its original position. Eligible means the PR is
+still open against `main`, its current head/base match the validated artifact,
+and all required checks passed with the approved dev origin. Before mutation
+under the environment lock, #11 must reject superseded candidates and candidates
+older than the last published run; GitHub queue order is not a freshness check.
+A newer failed or still-running validation does not displace the latest passing
+eligible run. Once publication begins it completes under the lock; a newly
+eligible run can replace it afterward. This deliberately allows one PR to
+replace another's preview, with no per-PR persistence guarantee.
+
+For prod, require the validated latest `main` commit at the freshness check;
+reject stale queued commits. Intentional rollback is Scott-authorized, explicit,
+and serialized through the same environment lock, rather than a stale-run
+bypass. #11 implements these checks and records run/artifact provenance.
 
 ## State, ownership, and bootstrap boundary
 
-| Boundary                                        | Resources and responsibility                                                                                                   | Recovery/management contract                                                                                                                                                            |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shared prerequisites, outside environment state | AWS account, domain registration/delegation, hosted zone, state bucket/encryption/backup/locking, account GitHub OIDC provider | Account/DNS/backend owners confirm inventory and restore these independently. Existing ownership is unknown; approve creation separately if absent. Never let app teardown remove them. |
-| Foom bootstrap, outside environment state       | Separate dev/prod IAM roles, trust and permission policies, GitHub variables and any environment protection settings           | `<BOOTSTRAP_OWNER>` with authorized administrative access creates/restores these before CI can authenticate. App roles cannot grant themselves access or change their own trust.        |
-| Foom environment state, separate for dev/prod   | Site bucket/content ownership, OAC, distribution, routing/cache/security policies, ACM certificate and Foom DNS records        | #10 defines lifecycle and content ownership; #11 publishes through the matching role. No resource or object is managed by two states or competing publishers.                           |
+| Boundary                                        | Resources and responsibility                                                                                                   | Recovery/management contract                                                                                                                                                                   |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared prerequisites, outside environment state | AWS account, domain registration/delegation, hosted zone, state bucket/encryption/backup/locking, account GitHub OIDC provider | Scott coordinates external account/DNS/backend owners to verify and restore these independently. Missing shared resources require separate authorization; app teardown must never remove them. |
+| Foom bootstrap, outside environment state       | Separate dev/prod IAM roles, trust and permission policies, GitHub variables and any environment protection settings           | Scott with separately authorized administrative access creates/restores these before CI can authenticate. App roles cannot grant themselves access or change their own trust.                  |
+| Foom environment state, separate for dev/prod   | Site bucket/content ownership, OAC, distribution, routing/cache/security policies, ACM certificate and Foom DNS records        | #10 defines lifecycle and content ownership; #11 publishes through the matching role. No resource or object is managed by two states or competing publishers.                                  |
 
-Proposed state backend requires encrypted transport/storage, versioned state
+The state backend contract requires encrypted transport/storage, versioned state
 backups and S3 lock files. Dev permissions cover only its effective state and
 lock keys; prod permissions cover only prod's. Scope bucket listing by the
 required prefixes. Permit state read/write and lock creation/read/deletion
 without granting blanket state deletion or access to other applications.
-If KMS is selected, scope key access to the required use. Neither application
+No customer-managed KMS key is selected by this contract. If the shared backend
+requires one, Scott must supply its ARN and scope access to the required use
+before deployment; do not change shared encryption settings. Neither application
 role owns the shared backend bucket, zone, or OIDC provider. Shared DNS
 validation records must have one explicit owner if environments overlap.
 
 Bootstrap documentation in #11 must record reviewed policies and restoration
-steps after the owner settles the table above. Discovery authorizes no cloud
+steps using these inputs, with offline-reviewed trust/permissions before any
+separately authorized creation. Discovery authorizes no cloud
 commands. Any later offline plan must use explicit mocks/offline provider
 configuration; a local backend alone does not prevent cloud access.
 
 ## OIDC trust and least privilege
 
-Both role trusts must require the approved provider, exact audience
-`sts.amazonaws.com`, and exact repository/event or branch subject. No wildcard
-repository or branch trust. Verify the repository's actual OIDC subject
-configuration during separately authorized bootstrap; do not infer it from
-Crab Attack's immutable IDs.
+Both role trusts must allow `sts:AssumeRoleWithWebIdentity` only for the
+confirmed provider, with `StringEquals` conditions for audience
+`sts.amazonaws.com` and the exact environment-specific subject below. No wildcard
+repository or branch trust.
 
-Candidate subjects **only if standard GitHub subjects are confirmed**:
+Repository API evidence supplied by the orchestrator on **2026-10-15** from
+`GET /repos/scott-r-lindsey/foom-site/actions/oidc/customization/sub`:
 
-- Dev: `repo:scott-r-lindsey/foom-site:pull_request`.
-- Prod: `repo:scott-r-lindsey/foom-site:ref:refs/heads/main`.
+```text
+use_default: true
+use_immutable_subject: true
+sub_claim_prefix: repo:scott-r-lindsey@457016/foom-site@1421149044
+```
 
-If the repository uses immutable/custom subjects, replace these with the exact
-owner-confirmed subjects. If GitHub Environments are introduced, account for
-the changed environment subject and enforce branch restrictions/protections;
-never silently broaden trust to make authentication work.
+Exact trusted subjects:
 
-The standard PR subject does not distinguish fork PRs from same-repository
-PRs. #11 must explicitly check the head repository before granting access to
-a credential-bearing job. Fork PR validation must never reach that job, and
-untrusted PR code must not run with credentials via `pull_request_target`.
+- Dev: `repo:scott-r-lindsey@457016/foom-site@1421149044:pull_request`.
+- Prod: `repo:scott-r-lindsey@457016/foom-site@1421149044:ref:refs/heads/main`.
+
+The immutable subject applies despite `use_default: true`; the standard subject
+without IDs is not the confirmed configuration. Never copy Crab Attack's
+repository ID. Recheck the repository configuration before restoring trust;
+if it changes, review exact subjects rather than broadening the policy.
+GitHub Environments are not selected by this default: introducing them changes
+the subject contract and requires explicit trust and branch-protection review.
+
+The PR subject does not distinguish fork PRs from same-repository PRs. #11 must
+explicitly check the head repository before granting access to a credential-bearing
+job. Fork PR validation must never reach that job, and untrusted PR code must not
+run with credentials via `pull_request_target`.
 Same-repository PR contributors are consequently trusted with dev privileges;
 owner review must accept that boundary. Grant `id-token: write` only to the
 authorized deployment job and minimal other GitHub permissions.
@@ -180,7 +218,7 @@ These are agreed requirements for #10/#11, not implemented behavior:
   rebuilding different content after the gate is insufficient. Record artifact
   identity and commit in the deployment summary.
 - Upload new fingerprinted assets before publishing HTML that references
-  them. Retain old hashes for `<RETENTION_WINDOW>` so cached HTML and open
+  them. Retain old hashes for at least 30 days after supersession so cached HTML and open
   tabs continue working. Do not blindly delete every object absent from the
   newest build. #10/#11 must define object ownership, release manifests,
   ordered publication and cleanup; bucket versioning alone does not keep
@@ -209,16 +247,34 @@ These are agreed requirements for #10/#11, not implemented behavior:
 
 Discovery includes no recovery commands or permission to execute these steps.
 
-## Bundled owner decisions still required
+## Implementation readiness and deployment verification
 
-1. Approve prod canonical domain/aliases, dev hostname, DNS zone/delegation
-   ownership, and who may modify the required records.
-2. Supply target AWS account(s), application region and shared prerequisite
-   inventory: state bucket/region/encryption/backup/locking and OIDC provider.
-3. Approve state paths, resource naming/tags, exact OIDC subjects, separate
-   role ARNs/policies, repository variables and deployment protections.
-4. Name bootstrap/backend/recovery owners; approve shared-dev replacement
-   behavior, cross-PR freshness policy, retention window and rollback access.
+The deployment-specific configuration required by #9 is supplied; there are no
+remaining discovery inputs blocking #10 design/implementation after integration.
+#10 owns Terraform and offline validation; #11 owns deployment workflows,
+bootstrap instructions/policies and publication/cleanup behavior. The existing
+[Quality workflow artifacts](ci.md#artifact-contract) are validation-only with
+reserved test origins and `deployable: false`; they must not be published.
+#11 must validate artifacts built with `https://dev.foom-term.com` or
+`https://foom-term.com` as appropriate, and preserve the checks/provenance contract.
 
-Until these are settled, this draft supports review and implementation design
-but does not close #9, unblock #10, or authorize provisioning/deployment.
+Before any real deployment, Scott must separately authorize cloud access and
+coordinate these operational checks; none are claimed verified here:
+
+1. Confirm target account access, Foom zone ownership and registrar delegation,
+   and authority for the exact alias and ACM validation records. Do not use the
+   Crab Attack zone or manage delegation from environment state.
+2. Verify live shared backend/provider existence, region, encryption, backup,
+   locking and scoped access. Restore missing shared prerequisites through
+   their external owners, without adopting or recreating them in app state.
+3. Confirm planned bucket names are available, create/reconcile the separate
+   Foom roles with reviewed trust and least-privilege policies, and configure
+   repository variables and approved deployment access. Role ARNs above are
+   planned identities, not evidence of created roles or working authentication.
+4. Verify DNS validation, routing/404 status, headers/cache behavior, artifact
+   publication order, retention and rollback in authorized dev deployment
+   before production. Record live evidence separately from offline checks.
+
+Optional aliases, live bootstrap verification and cloud authorization are later
+operational steps, not reasons to leave this discovery issue open. This contract
+does not authorize provisioning, deployment triggers or cloud API probes.
