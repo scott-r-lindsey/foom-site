@@ -248,11 +248,53 @@ exactly, including homepage SHA-256
 `293c081d9513ab71bf33b2cd6e3394178fab7edf542cf2d1f983368c66d00c6d`.
 
 `DEV_RECOVERY_RELEASE` was then deleted; repository variables again contained
-only the dev enable flag and distribution ID. A fresh normal publication restores
-revision B before this PR can be ready. No direct object writes/deletes, AWS
+only the dev enable flag and distribution ID. Normal publication then restored revision B in
+[run 38838273723](https://github.com/scott-r-lindsey/foom-site/actions/runs/38838273723):
+head `f126598d1eb45222c029e7ae7b76020f4ee990a9`, source
+`f45a7ca25ce130edb88f8cf3f9a05388962fc2ea`, release
+`38838273723-1-12020127140`, artifact digest
+`sha256:d250ce30c07b63450dfab6ea2bd6b26d00ffc4b072ce459d7ece44ffe3d8dbac`.
+Quality and publication succeeded. All 20 hosted checks passed again; both
+fixture pages returned 200 with the revision B hashes above, assets were intact,
+and the ledger contained no pending work or rollback identity. The override
+remained absent. [PR #26](https://github.com/scott-r-lindsey/foom-site/pull/26)
+records the final documentation head's subsequent normal publication identity;
+its site bytes are unchanged from this verified restoration. No direct object writes/deletes, AWS
 credential commands, infrastructure operations, IAM changes or production
 operations were performed during #12. Only the existing reviewed-main publisher
 mutated development content. Automated
 accessibility checks do not establish screen-reader usability or final design.
 Visual design, product copy, demos, download distribution and launch assets remain
 separate follow-up scope in [#1](https://github.com/scott-r-lindsey/foom-site/issues/1).
+
+## Local and live evidence boundaries
+
+The clean assigned checkout at `8d21dfa00b921fd9ca059ba275dbcaacdf4004b7`
+completed the README sequence with Node 24.17.0/pnpm 11.19.0: Corepack enable,
+frozen install, lint, typecheck, build, 12 artifact fixtures plus emitted-output
+checks, matching Chromium install, and all 8 production-preview browser tests.
+Playwright reported its Ubuntu 24.04 fallback on Linux Mint; no browser retries
+were used. Subsequent local production/development builds verified fixture
+exclusion/inclusion, 27 hosting tests and 16 offline deployment tests passed.
+Each linked CI run separately passed the four-build matrix, offline Terraform
+checks, required Quality gate and publication. Hosted checks were opt-in local
+runs against the public dev URL, not part of that offline CI matrix.
+
+Live results: nested pages 200; slash/index canonical redirects 308 with encoded
+and repeated query values preserved; HTTP-to-HTTPS 301; unknown path and missing
+CSS 404 with the custom HTML document; exact HTML/JS/SVG/XML/plain-text MIME and
+manifest cache policy; HSTS, nosniff, DENY framing, referrer and permissions
+policies; trusted HTTPS with TLS 1.2/1.3; dev canonical URLs, sitemap and
+`noindex, nofollow` plus robots `Disallow: /`. Headless Chromium at 320px and
+1440px passed axe WCAG A/AA, keyboard skip/home navigation, loading checks on the
+baseline, and overflow checks including 200% text. Desktop/mobile screenshots
+were visually inspected. Normal local checks make no hosted requests, and the
+hosted command without its explicit origin opt-in fails before test discovery.
+
+Retained-release rollback was exercised live; deliberate partial upload,
+invalidation and checkpoint failures were exercised **offline only**. No live
+failure was injected. CI infrastructure/backend locking operations, production
+hosting, screen-reader review and final product design remain unverified.
+The shared state bucket still has no versioning or automatic ongoing backup;
+its owner-approved local snapshot limitation is documented in
+[development-bootstrap.md](development-bootstrap.md).
