@@ -39,7 +39,10 @@ Keep guidance and commands aligned with the implementation as it lands.
 - Child implementers must not merge, enable auto-merge, delete branches, or
   remove worktrees. An explicitly authorized integration owner may review and
   merge PRs after required CI is green, including reviewed drafts.
-- Do not trigger deployments, provision resources, use real cloud credentials,
-  or probe cloud APIs. Never run Terraform apply, destroy, import, or state
-  commands. Infrastructure validation must be offline or explicitly mocked;
-  using a local backend alone does not make a plan offline.
+- Without explicit owner authorization for the specific environment and operation,
+  do not trigger deployments, provision resources, use real cloud credentials,
+  probe cloud APIs, or run Terraform apply, destroy, import, or state commands.
+  Default infrastructure validation must be offline or explicitly mocked; using
+  a local backend alone does not make a plan offline. Record authorized live work
+  and its evidence separately from offline checks. Dev authorization never implies
+  production authorization.
