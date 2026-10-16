@@ -234,7 +234,7 @@ integration owner may review and merge PRs after required CI is green, including
 reviewed drafts.
 
 Keep secrets, generated output, and local files out of commits as described in
-`AGENTS.md`. Use placeholders for required variables. Infrastructure and hosting
-work must remain offline or explicitly mocked: no real credentials, cloud API
-probes, resource mutations, or deployment workflow triggers. Detailed hosting
-instructions belong to #9 rather than this guide.
+`AGENTS.md`. Use placeholders for required variables. Infrastructure and hosting work defaults to offline or explicitly mocked
+validation unless the owner explicitly authorizes the environment and operation.
+The opt-in hosted checks require that authorization; see [deployment operations](deployment.md).
+Development authorization never implies production authorization.

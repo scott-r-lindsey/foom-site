@@ -36,4 +36,16 @@ and receives only the environment's publication policy, with its actual
 CloudFront distribution ARN. It receives no infrastructure, backend or IAM
 mutation permissions. Infrastructure approval variables remain absent.
 
-Live publication evidence will be recorded after the first successful gated run.
+The first successful gated publication was run `38833818304`, attempt 2,
+release `38833818304-2-12018703593`, after PR #25's reviewed fix. Quality and
+OIDC publication succeeded; CloudFront invalidation completed. See
+[deployment operations](deployment.md) for the artifact/source identity and #12
+hosted verification. Development uses distribution `E39JUFE2OF7XBP` and private
+bucket `foom-site-dev-225319921763-us-west-2`.
+
+Restricted local bootstrap snapshots are held under
+`/home/slindsey/.local/state/foom-site/backups`; do not print or commit them.
+No ongoing automatic state backup is established. Shared backend versioning
+remains disabled by the owner's explicit decision; site bucket versioning is a
+separate setting and is enabled. This is a recovery limitation, not a reason to
+change the shared bucket during site verification.

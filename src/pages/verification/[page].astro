@@ -1,0 +1,23 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { siteSettings } from '../../../metadata.mjs';
+
+// These unlinked operational fixtures must never be emitted in production.
+export function getStaticPaths() {
+  return siteSettings().indexable
+    ? []
+    : ['a', 'b'].map((page) => ({ params: { page } }));
+}
+
+const { page } = Astro.params;
+---
+
+<SiteLayout
+  title={`Verification ${page}`}
+  description="Development deployment verification fixture."
+  noindex
+>
+  <h1>Verification {page}</h1>
+  <p>Development fixture revision B.</p>
+  <a href="/">Return home</a>
+</SiteLayout>

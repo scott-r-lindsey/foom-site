@@ -1,6 +1,13 @@
 # Hosting discovery and AWS bootstrap contract
 
-Status: configuration discovery complete for [issue #9](https://github.com/scott-r-lindsey/foom-site/issues/9),
+Current operational status: [development bootstrap](development-bootstrap.md) and
+[deployment operations](deployment.md) supersede preparation-only statements below.
+Dev is live; production remains disabled. The shared backend is encrypted but
+not versioned by explicit owner decision; restricted local state snapshots are
+not ongoing automatic backups. GitHub uses only the dev enable/distribution
+variables, with role ARNs and region fixed in trusted publication code.
+
+Historical discovery status: configuration discovery complete for [issue #9](https://github.com/scott-r-lindsey/foom-site/issues/9),
 using owner approval recorded on **2026-10-15**. This contract supplies inputs for
 [infrastructure #10](https://github.com/scott-r-lindsey/foom-site/issues/10) and
 [deployment #11](https://github.com/scott-r-lindsey/foom-site/issues/11). It does
