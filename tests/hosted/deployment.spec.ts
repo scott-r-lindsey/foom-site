@@ -5,6 +5,7 @@ import { manifest } from '../../scripts/hosting/manifest.ts';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+const fixturesAbsent = process.env.HOSTED_FIXTURES === 'absent';
 const query = '?q=a%20b&tag=x&tag=y%26z';
 
 // Compare an explicitly supplied exact build, not just successful responses.
@@ -20,7 +21,7 @@ test('all deployed files match the supplied build bytes and metadata', async ({
     const absolute = join(directory, key);
     const route = `/${key}`.replace(/index\.html$/, '');
     const response = await request.get(route);
-    expect(response.status(), route).toBe(key === '404.html' ? 404 : 200);
+    expect(response.status(), route).toBe(200);
     const bytes = await response.body();
     expect(bytes.equals(await readFile(absolute)), route).toBe(true);
     const headers = response.headers();
@@ -49,7 +50,13 @@ test('canonical redirects preserve encoded and repeated query values', async ({
   ]) {
     const response = await request.get(path + query, { maxRedirects: 0 });
     expect(response.status()).toBe(308);
-    expect(response.headers()['location']).toBe(target + query);
+    const location = response.headers()['location']!;
+    expect(location.split('?')[0]).toBe(target);
+    // CloudFront's query object does not preserve ordering between keys.
+    // Compare encoded pairs while retaining every repeated value.
+    expect(location.split('?')[1]!.split('&').sort()).toEqual(
+      query.slice(1).split('&').sort(),
+    );
   }
   const http = await request.get(
     'http://dev.foom-term.com/verification/a/' + query,
@@ -80,9 +87,12 @@ test('development metadata and sitemap stay on the development origin', async ({
   expect(await robots.text()).toContain('Disallow: /');
   const sitemap = await request.get('/sitemap.xml');
   const xml = await sitemap.text();
-  for (const route of ['/', '/verification/a/', '/verification/b/'])
+  for (const route of fixturesAbsent
+    ? ['/']
+    : ['/', '/verification/a/', '/verification/b/'])
     expect(xml).toContain(`${baseURL}${route}</loc>`);
   expect(xml).not.toContain('https://foom-term.com');
+  if (fixturesAbsent) expect(xml).not.toContain('/verification/');
 });
 
 for (const route of ['/verification/a/', '/verification/b/']) {
@@ -91,6 +101,13 @@ for (const route of ['/verification/a/', '/verification/b/']) {
     baseURL,
   }) => {
     const response = await page.goto(route);
+    if (fixturesAbsent) {
+      expect(response?.status()).toBe(404);
+      await expect(
+        page.getByRole('link', { name: 'return to the home page' }),
+      ).toBeVisible();
+      return;
+    }
     expect(response?.status()).toBe(200);
     expect(await response?.securityDetails()).toMatchObject({
       protocol: /TLS 1\.[23]/,

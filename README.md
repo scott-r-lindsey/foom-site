@@ -98,6 +98,7 @@ This separate headless, zero-retry suite makes real HTTP/browser requests. Norma
 local/CI smoke checks remain offline from hosting. It compares every emitted file
 byte and publication header, checks nested redirects/query preservation, errors,
 TLS, development metadata, mobile/desktop layout, axe, and keyboard navigation.
-The unlinked `/verification/a/` and `/verification/b/` fixtures exist only in
+For a retained baseline without fixtures, add `HOSTED_FIXTURES=absent`; both
+fixture URLs must then return the custom 404. The unlinked `/verification/a/` and `/verification/b/` fixtures exist only in
 development builds; artifact checks reject their presence in production.
 See [deployment operations](docs/deployment.md) for live evidence and recovery.

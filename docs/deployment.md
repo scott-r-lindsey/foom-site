@@ -183,7 +183,27 @@ checks do not make these requests. Two unlinked development fixtures provide rea
 nested routes without adding claims or operational UI to the marketing homepage;
 production builds emit neither route.
 
-Live update/rollback evidence is pending the #12 verification sequence. Automated
+Initial #12 fixture publication passed Quality and publication in
+[run 38837313221](https://github.com/scott-r-lindsey/foom-site/actions/runs/38837313221).
+Head `302e10198c5268cf7bd71be823a8c61b335eaf48`, source
+`6257e01ea37c321af8edc2fdf5f26997082cc449`, release
+`38837313221-1-12019189716`, artifact digest
+`sha256:60eda505a7f2366e8544513bc9f113a5aa11aea7b0d27d1b302436a45574e97e`.
+All 20 hosted tests passed against the exact local development build after
+publication and completed invalidation; the durable ledger had no pending work.
+Fixture revision A was visible on both nested pages, with SHA-256:
+
+- `/verification/a/`: `a0bc3e6c9d0b18993bb504e10ca7c0f4f9d6b2a153e9ef0181600eab17003824`
+- `/verification/b/`: `d7bc1c913cb8bfe1dd2d2ec1433e50b50864bc52a98f51c2fb43163e2603b0ca`
+
+The initial hosted test development exposed two incorrect test assumptions,
+corrected before recording passing evidence: direct `/404.html` returns 200
+(the custom error response for unknown paths is 404), and CloudFront reorders
+query keys while preserving encoded/repeated values. No retries masked these
+failures. Baseline checks then passed 20/20 against the downloaded first-release
+artifact with fixtures explicitly expected absent.
+
+Update/rollback verification is continuing. Automated
 accessibility checks do not establish screen-reader usability or final design.
 Visual design, product copy, demos, download distribution and launch assets remain
 separate follow-up scope in [#1](https://github.com/scott-r-lindsey/foom-site/issues/1).
