@@ -83,3 +83,21 @@ Read [the contributor guide](docs/contributing.md) for architecture, commands,
 validation, and issue/worktree conventions, and [AGENTS.md](AGENTS.md) for
 repository instructions. Hosting requirements and outstanding inputs are recorded
 in [the hosting discovery document](docs/hosting.md).
+
+## Authorized development verification
+
+Development is live at <https://dev.foom-term.com>; production remains disabled.
+For explicitly authorized hosted checks, build the exact deployed source with
+`SITE_ENV=development SITE_ORIGIN=https://dev.foom-term.com pnpm build`, then run:
+
+```sh
+HOSTED_ORIGIN=https://dev.foom-term.com HOSTED_DIST="$PWD/dist" pnpm test:hosted
+```
+
+This separate headless, zero-retry suite makes real HTTP/browser requests. Normal
+local/CI smoke checks remain offline from hosting. It compares every emitted file
+byte and publication header, checks nested redirects/query preservation, errors,
+TLS, development metadata, mobile/desktop layout, axe, and keyboard navigation.
+The unlinked `/verification/a/` and `/verification/b/` fixtures exist only in
+development builds; artifact checks reject their presence in production.
+See [deployment operations](docs/deployment.md) for live evidence and recovery.

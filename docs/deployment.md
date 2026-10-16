@@ -1,11 +1,21 @@
-# Validated deployment preparation
+# Validated deployment operations
 
-Refs [#11](https://github.com/scott-r-lindsey/foom-site/issues/11). This is an
-**offline implementation, disabled by default**. No cloud resources, credentials,
-repository variables, or deployments have been created or verified. Successful
-live dev publication remains an open acceptance criterion; #12 remains blocked.
-Merging this change alone cannot publish. Scott must separately authorize cloud
-access/bootstrap and the first dev run before enabling anything below.
+Development publication is operational at <https://dev.foom-term.com> following
+owner-authorized bootstrap on 2026-10-15. The first successful gated publication
+was [run 38833818304, attempt 2](https://github.com/scott-r-lindsey/foom-site/actions/runs/38833818304/attempts/2),
+release `38833818304-2-12018703593`, source
+`cf9ce039187ae9ac477da10060df45686add9f16` (PR #25, now merged).
+Its GitHub artifact digest was
+`sha256:6c45c898e131fcfc60eda5a396540030494e96da2e875ce79805da0294107550`.
+Invalidation `I4QMS45OW6CJ0FRMUR56LE2G4X` completed. #11 is closed.
+
+Only `DEV_DEPLOY_ENABLED=true` and `DEV_DISTRIBUTION_ID=E39JUFE2OF7XBP`
+are normally configured. The private site bucket is
+`foom-site-dev-225319921763-us-west-2`. Production is disabled and unverified;
+infrastructure approval variables are absent. The GitHub dev role has publication
+permissions only, with no infrastructure, backend or IAM grants. See
+[bootstrap evidence and state recovery limits](development-bootstrap.md).
+Issue #12 records hosted checks and retained-release rollback separately below.
 
 ## Trust and gate
 
@@ -57,7 +67,7 @@ publication, future applies and recovery use `foom-release-dev` or
 jobs; freshness checks, rather than queue order, decide eligibility. Do not
 manually cancel an active mutation. Backend locking also remains required.
 
-## Bootstrap and enablement (operator action, not executed)
+## Bootstrap and enablement (separately authorized operator action)
 
 Read [hosting ownership and exact immutable subjects](hosting.md#oidc-trust-and-least-privilege)
 and [bootstrap templates](../terraform/bootstrap/README.md). The shared backend,
@@ -71,8 +81,7 @@ CloudFront output as `DEV_DISTRIBUTION_ID` / `PROD_DISTRIBUTION_ID`. These are
 non-secret identifiers. Enable **only** `DEV_DEPLOY_ENABLED=true` after review;
 leave `PROD_DEPLOY_ENABLED` absent until authorized dev checks and #12 pass.
 Absent/other values disable the respective job. Never use cloud keys or `.env`.
-Repository variables may be changed only by the authorized operator; this task
-has not changed them. Review main protection and workflow write access. All credential-job steps
+Repository variables may be changed only within explicit operator authorization. Review main protection and workflow write access. All credential-job steps
 must continue to use trusted main tools; never add PR checkout, dependency
 installation, downloaded executable content or candidate Terraform there.
 
@@ -96,7 +105,8 @@ resource replacement. Bootstrap owns creation and the review of any
 service-required wildcard permissions; see its README. Leave infrastructure
 approval absent until a complete scoped permission review and initial resource
 bootstrap have happened. Missing permissions fail closed, never grant `*:*`.
-No live infrastructure plan or deployment was run to test these operations.
+The initial dev infrastructure was bootstrapped separately; CI infrastructure
+plan/apply remains disabled and unverified.
 
 ## Publication and durable recovery
 
@@ -156,8 +166,24 @@ asset-before-document publication, partial failures and explicit recovery.
 `pnpm lint`, `pnpm typecheck`, the four quality builds and mocked Terraform tests
 remain the other checks. No test supplies AWS credentials or calls AWS.
 
-Live evidence is outstanding: OIDC subject/session acceptance, least-privilege
-permissions, backend locking, actual apply, successful dev publication, hosted
-routing/status/headers/cache behavior, durable failure recovery and rollback.
-Do not mark #11 complete or unblock #12 based on offline evidence. Production
-requires separately authorized dev verification and explicit enablement.
+Live dev publication establishes OIDC acceptance and the exercised publication
+permissions, not CI infrastructure/backend permissions or live partial-failure
+recovery. Partial-failure behavior remains covered by offline tests. Production
+requires separate explicit authorization and enablement.
+
+## Hosted verification (#12)
+
+Use the opt-in command in [README](../README.md#authorized-development-verification)
+against the exact deployed source/artifact. Never compare a different local build
+to shared dev: another eligible PR can replace it. The suite checks file bytes,
+MIME/cache/security headers, HTTPS/TLS, nested routing and query redirects,
+custom 404 status, canonical/sitemap/noindex policy and responsive keyboard/axe
+behavior. It starts no local server and needs no AWS credentials. Existing local
+checks do not make these requests. Two unlinked development fixtures provide real
+nested routes without adding claims or operational UI to the marketing homepage;
+production builds emit neither route.
+
+Live update/rollback evidence is pending the #12 verification sequence. Automated
+accessibility checks do not establish screen-reader usability or final design.
+Visual design, product copy, demos, download distribution and launch assets remain
+separate follow-up scope in [#1](https://github.com/scott-r-lindsey/foom-site/issues/1).

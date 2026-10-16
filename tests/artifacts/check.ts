@@ -142,7 +142,19 @@ export async function checkArtifacts(directory: string): Promise<string[]> {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const errors = await checkArtifacts(path.resolve(process.argv[2] ?? 'dist'));
+  const directory = path.resolve(process.argv[2] ?? 'dist');
+  const errors = await checkArtifacts(directory);
+  const { existsSync } = await import('node:fs');
+  for (const page of ['a', 'b']) {
+    const emitted = existsSync(
+      path.join(directory, 'verification', page, 'index.html'),
+    );
+    if (emitted !== (process.env.SITE_ENV !== 'production')) {
+      errors.push(
+        `verification/${page}: development-only route emission mismatch`,
+      );
+    }
+  }
   if (errors.length) {
     console.error(errors.join('\n'));
     process.exitCode = 1;
