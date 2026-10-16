@@ -203,7 +203,33 @@ query keys while preserving encoded/repeated values. No retries masked these
 failures. Baseline checks then passed 20/20 against the downloaded first-release
 artifact with fixtures explicitly expected absent.
 
-Update/rollback verification is continuing. Automated
+Revision B changed visible text on both fixture pages. Quality and normal
+publication passed in [run 38837659792](https://github.com/scott-r-lindsey/foom-site/actions/runs/38837659792),
+head `3594075bde2eab3de7f8c45638c501f9e9252cca`, source
+`a1008117e83e8828690659819fe0f4ee492a9674`, release
+`38837659792-1-12019857725`, digest
+`sha256:dac7115f79d15afa46e19c9939cea56b567460e8902ecb79801f5fd96d03f14a`.
+All 20 hosted checks passed again after publication, with no pending transaction.
+Both pages returned 200 with new SHA-256 values:
+
+- `/verification/a/`: `3f92634491de9f2fb75422f3383e52a9812a86c0b4e3033cabca25cdf2547ed1`
+- `/verification/b/`: `823398dbabfa5092c7bda7cdd62f00fa8943e47d8d0bf45a3f024cbb2a336e3a`
+
+The baseline assets remained reachable and byte-identical across both updates:
+`_astro/client.BmNEQPXu.js` SHA-256
+`99d0eaab3f751cac2f92058776607f33ebb63338d880b15eb403fa9fe8768b7d` and
+`_astro/favicon.5zOVtI7c.svg` SHA-256
+`c4fb8dfd915f3a067296a9c406869bd70c1bd596fed0b2226b7c9e64d98f974d`.
+Both use `public, max-age=0, must-revalidate`: the publisher conservatively
+revalidates Astro's opaque filenames; only names containing a verified full
+SHA-256 qualify for immutable caching. HTML uses the same revalidation policy.
+
+The authorized rollback exercise selects baseline release
+`38833818304-2-12018703593` through `DEV_RECOVERY_RELEASE` and a fresh eligible
+PR run. Its checks must compare the retained baseline bytes with
+`HOSTED_FIXTURES=absent`, including removal of both newer fixture pages and their
+sitemap entries. Clear the override afterward and publish the latest normal
+build. Rollback results are recorded after that run completes. Automated
 accessibility checks do not establish screen-reader usability or final design.
 Visual design, product copy, demos, download distribution and launch assets remain
 separate follow-up scope in [#1](https://github.com/scott-r-lindsey/foom-site/issues/1).
