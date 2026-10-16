@@ -229,7 +229,30 @@ The authorized rollback exercise selects baseline release
 PR run. Its checks must compare the retained baseline bytes with
 `HOSTED_FIXTURES=absent`, including removal of both newer fixture pages and their
 sitemap entries. Clear the override afterward and publish the latest normal
-build. Rollback results are recorded after that run completes. Automated
+build. The live rollback completed successfully in
+[run 38837937548](https://github.com/scott-r-lindsey/foom-site/actions/runs/38837937548),
+scheduling head `009040dc8351d4ff129d1520845ead1ffd182316`, source
+`9e1f96b717dcb5921290e49817b8a7a2b0e2a803`, scheduling release
+`38837937548-1-12019828301`. The ledger explicitly records `rollbackOf` baseline
+release `38833818304-2-12018703593`, `contentSha`
+`cf9ce039187ae9ac477da10060df45686add9f16`, content artifact `12018703593`, and
+the baseline ZIP digest above. Quality and publication passed; invalidation
+completed and `pending` was null.
+
+All 20 hosted checks passed against the downloaded baseline artifact. Both
+`/verification/a/` and `/verification/b/` returned the custom document with HTTP
+404, and their sitemap entries disappeared. All six original files matched
+exactly, including homepage SHA-256
+`e7b754155db7429151794ab76ff93a2715c133b7722cd591977bfb5d1a26cabe`, 404 document
+`163bb981b6d6f10c05336c7329671147396f9dd38a451830a793a1ee82032ffe`, and sitemap
+`293c081d9513ab71bf33b2cd6e3394178fab7edf542cf2d1f983368c66d00c6d`.
+
+`DEV_RECOVERY_RELEASE` was then deleted; repository variables again contained
+only the dev enable flag and distribution ID. A fresh normal publication restores
+revision B before this PR can be ready. No direct object writes/deletes, AWS
+credential commands, infrastructure operations, IAM changes or production
+operations were performed during #12. Only the existing reviewed-main publisher
+mutated development content. Automated
 accessibility checks do not establish screen-reader usability or final design.
 Visual design, product copy, demos, download distribution and launch assets remain
 separate follow-up scope in [#1](https://github.com/scott-r-lindsey/foom-site/issues/1).
