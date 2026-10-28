@@ -1,7 +1,9 @@
 # Development bootstrap and verification
 
 Scott authorized AWS bootstrap and the first development-only deployment on
-2026-10-15. Production remains disabled and outside this authorization.
+2026-10-15. Production was outside that authorization; separate approval and
+subsequent production bootstrap are recorded in
+[production bootstrap](production-bootstrap.md).
 This supplements the preparation instructions in [deployment.md](deployment.md).
 
 ## Verified prerequisites

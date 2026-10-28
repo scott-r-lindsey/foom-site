@@ -9,12 +9,17 @@ Its GitHub artifact digest was
 `sha256:6c45c898e131fcfc60eda5a396540030494e96da2e875ce79805da0294107550`.
 Invalidation `I4QMS45OW6CJ0FRMUR56LE2G4X` completed. #11 is closed.
 
-Only `DEV_DEPLOY_ENABLED=true` and `DEV_DISTRIBUTION_ID=E39JUFE2OF7XBP`
-are normally configured. The private site bucket is
-`foom-site-dev-225319921763-us-west-2`. Production is disabled and unverified;
-infrastructure approval variables are absent. The GitHub dev role has publication
-permissions only, with no infrastructure, backend or IAM grants. See
-[bootstrap evidence and state recovery limits](development-bootstrap.md).
+Development uses `DEV_DEPLOY_ENABLED=true`,
+`DEV_DISTRIBUTION_ID=E39JUFE2OF7XBP` and private bucket
+`foom-site-dev-225319921763-us-west-2`. Owner-authorized
+[production bootstrap](production-bootstrap.md) has provisioned distribution
+`EWHI9NJ60HNKA` and private bucket `foom-site-prod-225319921763-us-west-2`, with
+`PROD_DISTRIBUTION_ID=EWHI9NJ60HNKA` and `PROD_DEPLOY_ENABLED=true`.
+Production publication is enabled for the next validated push to main; first
+publication, hosted verification and rollback remain pending. Infrastructure
+approval variables are absent. Both GitHub roles have publication permissions
+only, with no infrastructure, backend or IAM grants. See
+[development bootstrap evidence and state recovery limits](development-bootstrap.md).
 Issue #12 records hosted checks and retained-release rollback separately below.
 
 ## Trust and gate
@@ -78,8 +83,10 @@ legacy role ARN variables are unnecessary. Region is fixed at `us-west-2`.
 
 After separately authorized bootstrap, record the environment's approved
 CloudFront output as `DEV_DISTRIBUTION_ID` / `PROD_DISTRIBUTION_ID`. These are
-non-secret identifiers. Enable **only** `DEV_DEPLOY_ENABLED=true` after review;
-leave `PROD_DEPLOY_ENABLED` absent until authorized dev checks and #12 pass.
+non-secret identifiers. Enable the respective environment only after explicit
+owner authorization and prerequisite verification. Development verification in
+#12 is complete; #33 records separate production bootstrap/launch approval and
+`PROD_DEPLOY_ENABLED=true` enablement.
 Absent/other values disable the respective job. Never use cloud keys or `.env`.
 Repository variables may be changed only within explicit operator authorization. Review main protection and workflow write access. All credential-job steps
 must continue to use trusted main tools; never add PR checkout, dependency
@@ -105,8 +112,8 @@ resource replacement. Bootstrap owns creation and the review of any
 service-required wildcard permissions; see its README. Leave infrastructure
 approval absent until a complete scoped permission review and initial resource
 bootstrap have happened. Missing permissions fail closed, never grant `*:*`.
-The initial dev infrastructure was bootstrapped separately; CI infrastructure
-plan/apply remains disabled and unverified.
+Development and production infrastructure were bootstrapped separately; CI
+infrastructure plan/apply remains disabled and unverified.
 
 ## Publication and durable recovery
 
@@ -169,7 +176,9 @@ remain the other checks. No test supplies AWS credentials or calls AWS.
 Live dev publication establishes OIDC acceptance and the exercised publication
 permissions, not CI infrastructure/backend permissions or live partial-failure
 recovery. Partial-failure behavior remains covered by offline tests. Production
-requires separate explicit authorization and enablement.
+has separate explicit authorization and enablement recorded in
+[production bootstrap](production-bootstrap.md); its first publication and hosted
+verification remain pending.
 
 ## Hosted verification (#12)
 
@@ -293,8 +302,10 @@ hosted command without its explicit origin opt-in fails before test discovery.
 
 Retained-release rollback was exercised live; deliberate partial upload,
 invalidation and checkpoint failures were exercised **offline only**. No live
-failure was injected. CI infrastructure/backend locking operations, production
-hosting, screen-reader review and final product design remain unverified.
+failure was injected. CI infrastructure/backend locking operations, production publication/hosted
+behavior, screen-reader review and final product design remain unverified.
+Production infrastructure itself was subsequently bootstrapped as recorded in
+[production bootstrap](production-bootstrap.md).
 The shared state bucket still has no versioning or automatic ongoing backup;
 its owner-approved local snapshot limitation is documented in
 [development-bootstrap.md](development-bootstrap.md).

@@ -86,7 +86,10 @@ in [the hosting discovery document](docs/hosting.md).
 
 ## Authorized development verification
 
-Development is live at <https://dev.foom-term.com>; production remains disabled.
+Development is live at <https://dev.foom-term.com>.
+[Production bootstrap](docs/production-bootstrap.md) has enabled publication on
+push to main; production hosted verification is pending. The command below
+currently supports development only.
 For explicitly authorized hosted checks, build the exact deployed source with
 `SITE_ENV=development SITE_ORIGIN=https://dev.foom-term.com pnpm build`, then run:
 
