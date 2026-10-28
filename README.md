@@ -87,9 +87,9 @@ in [the hosting discovery document](docs/hosting.md).
 ## Authorized development verification
 
 Development is live at <https://dev.foom-term.com>.
-[Production bootstrap](docs/production-bootstrap.md) has enabled publication on
-push to main; production hosted verification is pending. The command below
-currently supports development only.
+Production is live at <https://foom-term.com>; see
+[production publication and verification evidence](docs/production-bootstrap.md).
+The development command below preserves its non-indexed fixture checks.
 For explicitly authorized hosted checks, build the exact deployed source with
 `SITE_ENV=development SITE_ORIGIN=https://dev.foom-term.com pnpm build`, then run:
 
@@ -104,4 +104,19 @@ TLS, development metadata, mobile/desktop layout, axe, and keyboard navigation.
 For a retained baseline without fixtures, add `HOSTED_FIXTURES=absent`; both
 fixture URLs must then return the custom 404. The unlinked `/verification/a/` and `/verification/b/` fixtures exist only in
 development builds; artifact checks reject their presence in production.
+For separately authorized production verification, use the exact deployed source
+and `SITE_ENV=production SITE_ORIGIN=https://foom-term.com pnpm build`, verify its
+manifest hashes against the deployed artifact, then run:
+
+```sh
+HOSTED_ORIGIN=https://foom-term.com HOSTED_DIST="$PWD/dist" pnpm test:hosted
+```
+
+Alternatively, supply the exact checked retained artifact's extracted build as
+`HOSTED_DIST`. The suite accepts only these two exact origins and requires an
+explicit origin on every run. Production checks enforce indexable home metadata,
+production canonical/sitemap/robots and absent development fixtures. Development
+checks continue to require noindex and its own origin; `HOSTED_FIXTURES=absent`
+only selects a development retained baseline and cannot enable prod fixtures.
+
 See [deployment operations](docs/deployment.md) for live evidence and recovery.

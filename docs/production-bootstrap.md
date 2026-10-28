@@ -89,23 +89,87 @@ were unchanged and `PROD_INFRA_APPROVED_SHA` remained absent. Infrastructure
 continues to be bootstrap-owned; enabling content publication does not enable
 CI Terraform operations.
 
-## Publication and verification boundary
+## First production publication
 
-Production publication runs on push to `main`, consuming the exact checked
-production artifact after the required Quality gate. A PR does not publish to
-production. This bootstrap does not establish successful production OIDC,
-publication, hosted verification, or rollback.
+[PR #35](https://github.com/scott-r-lindsey/foom-site/pull/35) merged as
+`82d6dde2eb7cbfac98629197a057ba2718a71e43`.
+[Main run 40620201832, attempt 1](https://github.com/scott-r-lindsey/foom-site/actions/runs/40620201832)
+passed Quality and `Deploy validated artifact / publish`, publishing the current
+content to <https://foom-term.com>. Read-only ledger inspection confirmed:
 
-After the bootstrap PR is merged by the integration owner, record its main
-publication run, source/artifact/release identity and completed invalidation.
-Then compare the exact deployed artifact with headless
-`playwright.hosted.config.ts` checks against `https://foom-term.com`, confirm
-production canonical/sitemap/indexing and development noindex, and rehearse
-retained-release recovery through `PROD_RECOVERY_RELEASE`. Clear the recovery
-variable afterward and record restoration and journal evidence. The current
-hosted configuration and metadata assertions are development-only and must be
-extended to accept the explicit production origin before those checks can run;
-production must keep development-only verification fixtures absent.
+| Field                         | Verified value                                                            |
+| ----------------------------- | ------------------------------------------------------------------------- |
+| Source SHA                    | `82d6dde2eb7cbfac98629197a057ba2718a71e43`                                |
+| Release                       | `40620201832-1-12787305854`                                               |
+| Content artifact              | `12787305854`                                                             |
+| GitHub artifact digest        | `sha256:656ba8bb4314fa8a65bd932cdb61045b877b72630cf734ccfb9598fbb0d4e98b` |
+| Invalidation                  | `IC1VTIY4DIWHTPISKWCEVSAKV`, `Completed`, paths `/*`                      |
+| Invalidation caller reference | `40620201832-1-12787305854`                                               |
+| Ledger                        | One retained release, current matches above, `pending: null`              |
+
+The retained ZIP was downloaded read-only and verified through the trusted
+publisher's unpacking checks: GitHub digest, archive digest, source/origin
+manifest and recomputed file hashes/metadata all matched the ledger. A local
+production build from that exact deployed source, with the pinned toolchain and
+`SITE_ENV=production SITE_ORIGIN=https://foom-term.com`, independently matched
+every deployed file hash and metadata entry. No AWS infrastructure or publication
+mutations were performed during hosted verification.
+
+## Authorized hosted verification
+
+The suite now accepts only the explicit approved development or production
+`HOSTED_ORIGIN`; unset or other origins still fail before discovery. Production
+always expects development fixtures absent, regardless of the development
+rollback fixture override. Existing development assertions remain intact.
+
+Headless Chromium ran at 320px and 1440px with zero Playwright retries. On
+2026-10-28 UTC (2026-10-27 Pacific), both production attempts used the unchanged
+suite and exact deployed production build:
+
+1. **First attempt: 21/22 passed.** The first narrow-home navigation failed with
+   `net::ERR_NAME_NOT_RESOLVED` at `page.goto`, before accessibility assertions.
+   All later same-host navigations and the other 21 tests passed. Work stopped
+   and the failure was handed to the orchestrator; it was not hidden by retries.
+2. The orchestrator assessed the isolated failure as transient resolver/negative
+   cache warmup shortly after apex record creation and explicitly authorized one
+   environmental retry. `getent hosts foom-term.com` confirmed resolution without
+   sleeps. **Second full attempt: 22/22 passed**, unchanged, with zero Playwright
+   retries. No third attempt was made.
+
+The successful run covered all six deployed files byte-for-byte and their exact
+MIME/cache/security metadata; HTTP-to-HTTPS and canonical 308 query-preserving
+redirects; custom 404s for missing paths/assets; valid TLS 1.2/1.3; home canonical
+`https://foom-term.com/` and `index, follow`; robots `Allow: /` with the production
+sitemap; production-only sitemap URLs; and custom 404s plus absent sitemap entries
+for both development fixture paths. The responsive shell passed axe WCAG A/AA,
+loading checks, enlarged-text overflow and native keyboard navigation with and
+without JavaScript. IPv6 reachability was not established: the operator host has
+no IPv6 connectivity; that is not evidence of a site failure. Playwright reported
+its Ubuntu 24.04 fallback browser build on Linux Mint.
+
+Development regression verification passed **22/22 on its first attempt**, using
+the exact retained checked development artifact: release
+`40619860150-1-12786339423`, source
+`3e8fdb6d4ffe1dd0d838a0f9b48b6844b4b4ed69`, artifact digest
+`sha256:9a1495aa69a90a34619923c2cd90da3a001a6dd83b5b1daf8c7bf96d0796d3af`.
+Read-only ledger inspection showed no pending transaction. Every deployed byte
+matched; development retains `noindex, nofollow`, robots `Disallow: /`, its own
+canonical/sitemap origin, and both accessible nested verification fixtures.
+Normal local/CI checks remain separate from these explicit hosted requests.
+
+## Rollback rehearsal still pending
+
+Only one production release was retained at this checkpoint. The verification
+PR must be merged by the integration owner to publish a second release before
+rehearsal. Then select the prior release with `PROD_RECOVERY_RELEASE`, schedule a
+fresh eligible main publication, verify retained bytes and journal identity,
+clear the override, and restore/verify the current release. A fresh main
+push/merge may be needed: the publisher rejects stale/equal scheduling identities,
+so an ordinary rerun is not a freshness bypass. Hand this scheduling step to the
+orchestrator; do not merge locally or manually synchronize objects.
+
+Issue #33 remains open until rollback and restoration evidence are recorded.
+No recovery variable has been set and no production rollback is claimed here.
 
 ## Offline evidence
 
@@ -115,5 +179,12 @@ deployment tests passed. Terraform formatting, backend-disabled initialization,
 validation and explicitly mocked dev/prod/default-workspace tests passed
 (3 + 3 + 1 cases), with AWS credentials/configuration disabled and a separate
 Terraform data directory. These checks do not prove production publication or
-CI infrastructure permissions. PR CI evidence is recorded in the PR; no hosted
-checks have run as part of this bootstrap.
+CI infrastructure permissions. PR CI evidence is recorded in the PR. Subsequent live hosted results are recorded
+separately above.
+
+For the hosted-suite extension, local `pnpm lint`, `pnpm typecheck`, all 16
+offline deployment tests, documentation relative-link checks and
+`git diff --check` passed. Discovery-only `pnpm test:hosted --list` checks accepted
+the two approved origins and rejected both unset and unapproved origins before
+test discovery; they made no hosted requests. The test-only changes do not alter
+production site bytes, workflow triggers, Terraform, IAM or repository variables.

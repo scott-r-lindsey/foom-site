@@ -1,9 +1,13 @@
 import { defineConfig } from '@playwright/test';
 
 // Explicit opt-in: ordinary local/CI checks never contact a deployed site.
-if (process.env.HOSTED_ORIGIN !== 'https://dev.foom-term.com') {
+if (
+  !['https://dev.foom-term.com', 'https://foom-term.com'].includes(
+    process.env.HOSTED_ORIGIN ?? '',
+  )
+) {
   throw new Error(
-    'Set HOSTED_ORIGIN=https://dev.foom-term.com for authorized dev checks.',
+    'Set HOSTED_ORIGIN to https://dev.foom-term.com or https://foom-term.com for authorized hosted checks.',
   );
 }
 

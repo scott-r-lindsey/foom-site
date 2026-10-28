@@ -15,8 +15,11 @@ Development uses `DEV_DEPLOY_ENABLED=true`,
 [production bootstrap](production-bootstrap.md) has provisioned distribution
 `EWHI9NJ60HNKA` and private bucket `foom-site-prod-225319921763-us-west-2`, with
 `PROD_DISTRIBUTION_ID=EWHI9NJ60HNKA` and `PROD_DEPLOY_ENABLED=true`.
-Production publication is enabled for the next validated push to main; first
-publication, hosted verification and rollback remain pending. Infrastructure
+[Main run 40620201832](https://github.com/scott-r-lindsey/foom-site/actions/runs/40620201832)
+published production successfully. Production hosted verification passed on the
+single authorized environmental retry after an initial DNS failure; both attempts
+and the passing development regression suite are recorded in
+[production evidence](production-bootstrap.md). Production rollback remains pending. Infrastructure
 approval variables are absent. Both GitHub roles have publication permissions
 only, with no infrastructure, backend or IAM grants. See
 [development bootstrap evidence and state recovery limits](development-bootstrap.md).
@@ -177,8 +180,8 @@ Live dev publication establishes OIDC acceptance and the exercised publication
 permissions, not CI infrastructure/backend permissions or live partial-failure
 recovery. Partial-failure behavior remains covered by offline tests. Production
 has separate explicit authorization and enablement recorded in
-[production bootstrap](production-bootstrap.md); its first publication and hosted
-verification remain pending.
+[production bootstrap](production-bootstrap.md), including successful publication
+and hosted verification. Production rollback rehearsal remains pending.
 
 ## Hosted verification (#12)
 
@@ -302,8 +305,8 @@ hosted command without its explicit origin opt-in fails before test discovery.
 
 Retained-release rollback was exercised live; deliberate partial upload,
 invalidation and checkpoint failures were exercised **offline only**. No live
-failure was injected. CI infrastructure/backend locking operations, production publication/hosted
-behavior, screen-reader review and final product design remain unverified.
+failure was injected. CI infrastructure/backend locking operations, production
+rollback, screen-reader review and final product design remain unverified.
 Production infrastructure itself was subsequently bootstrapped as recorded in
 [production bootstrap](production-bootstrap.md).
 The shared state bucket still has no versioning or automatic ongoing backup;
