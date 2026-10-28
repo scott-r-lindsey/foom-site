@@ -157,19 +157,56 @@ matched; development retains `noindex, nofollow`, robots `Disallow: /`, its own
 canonical/sitemap origin, and both accessible nested verification fixtures.
 Normal local/CI checks remain separate from these explicit hosted requests.
 
-## Rollback rehearsal still pending
+## Rollback rehearsal: phase 1 prepared
 
-Only one production release was retained at this checkpoint. The verification
-PR must be merged by the integration owner to publish a second release before
-rehearsal. Then select the prior release with `PROD_RECOVERY_RELEASE`, schedule a
-fresh eligible main publication, verify retained bytes and journal identity,
-clear the override, and restore/verify the current release. A fresh main
-push/merge may be needed: the publisher rejects stale/equal scheduling identities,
-so an ordinary rerun is not a freshness bypass. Hand this scheduling step to the
-orchestrator; do not merge locally or manually synchronize objects.
+[PR #36](https://github.com/scott-r-lindsey/foom-site/pull/36) merged as
+`da223f975c9f8fe58a33ca1f9c52e409583a3150`.
+[Main run 40621262298, attempt 1](https://github.com/scott-r-lindsey/foom-site/actions/runs/40621262298)
+passed, including production publication. On 2026-10-28 UTC, authorized read-only
+checks confirmed the second normal production release:
 
-Issue #33 remains open until rollback and restoration evidence are recorded.
-No recovery variable has been set and no production rollback is claimed here.
+| Field                         | Verified value                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| Source SHA                    | `da223f975c9f8fe58a33ca1f9c52e409583a3150`                                     |
+| Release                       | `40621262298-1-12787646898`                                                    |
+| Content artifact              | `12787646898`                                                                  |
+| GitHub artifact digest        | `sha256:29edbef3ccc3b7a9c1dc53aac827d1f1aba5aabf1466ee13d063c92d71543e39`      |
+| Invalidation                  | `I69TZCLQ857EB3FMNACNWQYEYA`, `Completed`, paths `/*`                          |
+| Invalidation caller reference | `40621262298-1-12787646898`                                                    |
+| Ledger                        | Exactly two retained releases, current matches second release, `pending: null` |
+
+The two releases' ledger manifests have the same six keys and identical SHA-256
+for every deployed file. For example, `index.html` is
+`9a50df3c8c8319814d37765bacb30ddd08c16ac0c975c2dde0d30e320e630b24` in both.
+The artifacts have distinct digests/source identities because their provenance
+changed; no visible content difference is expected during this rehearsal.
+Recovery must therefore be demonstrated through the new scheduling identity,
+`rollbackOf` and `contentSha`, in addition to retained-byte comparisons and a
+completed invalidation. This does not claim a visible content rollback.
+
+The orchestrator explicitly authorized phase 1. After checking the second
+release, the operator set
+`PROD_RECOVERY_RELEASE=40620201832-1-12787305854` and verified the exact value by
+repository-variable readback. All previously configured variables remained
+unchanged, and `PROD_INFRA_APPROVED_SHA` remained absent. No workflow was
+triggered directly and no site objects or infrastructure were mutated by these
+checks. Development settings remain unchanged.
+
+The recovery override is now active and sticky. The integration owner's merge
+of the docs-only rehearsal PR will create the fresh eligible main run that
+republishes the first retained release through the normal serialized publisher.
+An ordinary rerun is not a stale/equal scheduling-identity bypass. Phase 1 stops
+at the reviewed, green draft PR; the implementer does not merge it.
+
+After that merge, phase 2 must confirm successful publication, `rollbackOf` the
+first release, its `contentSha`, exact retained bytes, `pending: null`, and
+completed invalidation. Only then clear `PROD_RECOVERY_RELEASE`, record that
+readback, and hand off a final evidence PR whose merge restores normal current
+publication. Verify restored scheduling/content identity and live bytes after
+that publication, then record final issue evidence.
+
+Issue #33 remains open until recovery and restoration evidence are complete.
+No production recovery or restoration has run at this phase-1 checkpoint.
 
 ## Offline evidence
 
@@ -188,3 +225,8 @@ offline deployment tests, documentation relative-link checks and
 the two approved origins and rejected both unset and unapproved origins before
 test discovery; they made no hosted requests. The test-only changes do not alter
 production site bytes, workflow triggers, Terraform, IAM or repository variables.
+
+The phase-1 rehearsal change is documentation-only. Relative file links,
+formatting and `git diff --check` were checked locally; the commit hooks also run
+lint and typecheck. Full PR CI results are recorded separately in the PR body.
+The live release/variable evidence above is distinct from those offline checks.
