@@ -56,3 +56,35 @@ recovery order from hosting discovery. [Deployment operations](../../docs/deploy
 describes disabled variables, trusted-main infrastructure approval, durable
 retention and serialized rollback. No permissions or live behavior are claimed
 verified here.
+
+## First production workspace initialization
+
+Only with explicit production bootstrap authorization, check that production
+resources and state do not already exist. Preserve any existing state in
+restricted operator backups and stop for reconciliation if resources or state
+are unexpected. Use a restricted, operator-owned `TF_DATA_DIR` outside the
+repository for live operations; keep offline validation in a separate directory.
+
+For an absent production workspace, initialize the committed backend without a
+workspace override, then create only `prod` with locking enabled:
+
+```sh
+unset TF_WORKSPACE
+export TF_DATA_DIR=/absolute/operator/path/to/restricted/terraform-data
+terraform -chdir=terraform init -input=false -lockfile=readonly
+terraform -chdir=terraform workspace new -lock=true prod
+export TF_WORKSPACE=prod
+```
+
+Do not plan or apply in `default`. Verify the only new backend key is
+`foom-site/prod/terraform.tfstate` (plus a transient `.tflock`), confirm the
+state is empty, and snapshot it to operator backups with directory mode `0700`
+and file mode `0600`. Never print or commit state. Do not create another
+workspace, change backend configuration, or touch development state.
+
+Save a production plan with `-var=environment=prod` and `-out` pointing to a
+restricted plan file. Review the action counts, resource addresses and production
+targets before requesting apply approval. Apply only the approved saved file
+after verifying its SHA-256, using the same `TF_DATA_DIR` and `TF_WORKSPACE=prod`;
+capture a restricted post-apply state snapshot. Plans can contain sensitive data
+and must remain outside Git. See [production bootstrap evidence](../../docs/production-bootstrap.md).

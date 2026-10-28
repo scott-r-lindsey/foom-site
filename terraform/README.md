@@ -4,7 +4,11 @@ This root owns one environment's private S3 REST origin, OAC, CloudFront
 function/distribution/cache/header policies, ACM certificate and Route 53 alias
 and validation records. It does not own shared prerequisites, bootstrap IAM,
 GitHub settings, or published objects. Approved identities and ownership are in
-[hosting.md](../docs/hosting.md). Nothing has been provisioned or live verified.
+[hosting.md](../docs/hosting.md). Development and production infrastructure have
+been bootstrapped through separately authorized operator actions; see
+[development](../docs/development-bootstrap.md) and
+[production](../docs/production-bootstrap.md) evidence. Production publication and
+hosted verification remain pending.
 
 Terraform **1.15.9** and AWS provider **6.21.0** are pinned; commit the provider
 lockfile. The certificate provider alias uses `us-east-1`; the default provider
@@ -150,7 +154,9 @@ TLS/headers, freshness, retention and rollback checks in dev before production.
 [#11 deployment preparation](../docs/deployment.md) now supplies the actual
 AWS CLI adapter, trusted-main artifact verifier, durable journal, indefinite
 archive/asset retention and explicit recovery/rollback selection. Publication and
-infrastructure approval remain disabled by default; no live verification is
-claimed. [Bootstrap review templates](bootstrap/README.md) are scoped offline
+infrastructure approval remain disabled by default in code. Publication is
+operational in dev and enabled for prod through repository variables;
+infrastructure approval remains absent. See the environment bootstrap evidence
+above for live status. [Bootstrap review templates](bootstrap/README.md) are scoped offline
 starting points, with initial infrastructure creation and policy expansion
 reserved for the separately authorized bootstrap owner.

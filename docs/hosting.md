@@ -2,10 +2,14 @@
 
 Current operational status: [development bootstrap](development-bootstrap.md) and
 [deployment operations](deployment.md) supersede preparation-only statements below.
-Dev is live; production remains disabled. The shared backend is encrypted but
-not versioned by explicit owner decision; restricted local state snapshots are
-not ongoing automatic backups. GitHub uses only the dev enable/distribution
-variables, with role ARNs and region fixed in trusted publication code.
+Dev is live. [Production bootstrap](production-bootstrap.md) has provisioned the
+apex infrastructure and enabled publication on push to main; first publication,
+hosted verification and rollback evidence are pending. The shared backend is
+encrypted but not versioned by explicit owner decision; restricted local state
+snapshots are not ongoing automatic backups. GitHub uses the dev/prod
+enable/distribution variables, with role ARNs and region fixed in trusted
+publication code. Both roles have publication permissions only; infrastructure
+approval variables remain absent.
 
 Historical discovery status: configuration discovery complete for [issue #9](https://github.com/scott-r-lindsey/foom-site/issues/9),
 using owner approval recorded on **2026-10-15**. This contract supplies inputs for
