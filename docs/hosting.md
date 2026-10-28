@@ -2,9 +2,9 @@
 
 Current operational status: [development bootstrap](development-bootstrap.md) and
 [deployment operations](deployment.md) supersede preparation-only statements below.
-Dev is live. [Production bootstrap](production-bootstrap.md) has provisioned the
-apex infrastructure and enabled publication on push to main; first publication,
-hosted verification and rollback evidence are pending. The shared backend is
+Dev and production are live. [Production bootstrap](production-bootstrap.md)
+records the apex infrastructure, successful main publication and hosted checks;
+production rollback rehearsal remains pending. The shared backend is
 encrypted but not versioned by explicit owner decision; restricted local state
 snapshots are not ongoing automatic backups. GitHub uses the dev/prod
 enable/distribution variables, with role ARNs and region fixed in trusted

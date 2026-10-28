@@ -5,7 +5,8 @@ import { manifest } from '../../scripts/hosting/manifest.ts';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-const fixturesAbsent = process.env.HOSTED_FIXTURES === 'absent';
+const production = process.env.HOSTED_ORIGIN === 'https://foom-term.com';
+const fixturesAbsent = production || process.env.HOSTED_FIXTURES === 'absent';
 const query = '?q=a%20b&tag=x&tag=y%26z';
 
 // Compare an explicitly supplied exact build, not just successful responses.
@@ -14,8 +15,12 @@ test('all deployed files match the supplied build bytes and metadata', async ({
 }) => {
   const directory = process.env.HOSTED_DIST;
   if (!directory)
-    throw new Error('HOSTED_DIST must point to the exact development build.');
+    throw new Error('HOSTED_DIST must point to the exact deployed build.');
   const { files } = await manifest(directory);
+  if (production)
+    expect(
+      files.filter((file) => file.key.startsWith('verification/')),
+    ).toEqual([]);
   for (const file of files) {
     const key = file.key;
     const absolute = join(directory, key);
@@ -42,6 +47,7 @@ test('all deployed files match the supplied build bytes and metadata', async ({
 
 test('canonical redirects preserve encoded and repeated query values', async ({
   request,
+  baseURL,
 }) => {
   for (const [path, target] of [
     ['/index.html', '/'],
@@ -59,13 +65,11 @@ test('canonical redirects preserve encoded and repeated query values', async ({
     );
   }
   const http = await request.get(
-    'http://dev.foom-term.com/verification/a/' + query,
+    `${baseURL!.replace('https:', 'http:')}/verification/a/` + query,
     { maxRedirects: 0 },
   );
   expect(http.status()).toBe(301);
-  expect(http.headers()['location']).toBe(
-    'https://dev.foom-term.com/verification/a/' + query,
-  );
+  expect(http.headers()['location']).toBe(`${baseURL}/verification/a/` + query);
 });
 
 test('missing routes and assets return the custom 404 with 404 status', async ({
@@ -79,20 +83,49 @@ test('missing routes and assets return the custom 404 with 404 status', async ({
   }
 });
 
-test('development metadata and sitemap stay on the development origin', async ({
+test('metadata and sitemap enforce the selected environment policy', async ({
   request,
   baseURL,
 }) => {
   const robots = await request.get('/robots.txt');
-  expect(await robots.text()).toContain('Disallow: /');
+  expect(robots.status()).toBe(200);
+  expect(await robots.text()).toBe(
+    production
+      ? `User-agent: *\nAllow: /\nSitemap: ${baseURL}/sitemap.xml\n`
+      : 'User-agent: *\nDisallow: /\n',
+  );
   const sitemap = await request.get('/sitemap.xml');
+  expect(sitemap.status()).toBe(200);
   const xml = await sitemap.text();
   for (const route of fixturesAbsent
     ? ['/']
     : ['/', '/verification/a/', '/verification/b/'])
     expect(xml).toContain(`${baseURL}${route}</loc>`);
-  expect(xml).not.toContain('https://foom-term.com');
+  expect(xml).not.toContain(
+    production ? 'https://dev.foom-term.com' : 'https://foom-term.com',
+  );
   if (fixturesAbsent) expect(xml).not.toContain('/verification/');
+});
+
+test('home canonical, indexing and trusted TLS match the selected origin', async ({
+  page,
+  baseURL,
+}) => {
+  const response = await page.goto('/');
+  expect(response?.status()).toBe(200);
+  expect(await response?.securityDetails()).toMatchObject({
+    protocol: /TLS 1\.[23]/,
+  });
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    `${baseURL}/`,
+  );
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    'content',
+    production ? 'index, follow' : 'noindex, nofollow',
+  );
+  if (production)
+    expect(response?.headers()['x-robots-tag'] ?? '').not.toMatch(/noindex/i);
 });
 
 for (const route of ['/verification/a/', '/verification/b/']) {
