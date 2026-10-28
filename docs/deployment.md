@@ -19,7 +19,9 @@ Development uses `DEV_DEPLOY_ENABLED=true`,
 published production successfully. Production hosted verification passed on the
 single authorized environmental retry after an initial DNS failure; both attempts
 and the passing development regression suite are recorded in
-[production evidence](production-bootstrap.md). Production rollback remains pending. Infrastructure
+[production evidence](production-bootstrap.md). Retained-release recovery is
+verified and its override cleared; normal restoration awaits the evidence-PR
+merge and subsequent verification. Infrastructure
 approval variables are absent. Both GitHub roles have publication permissions
 only, with no infrastructure, backend or IAM grants. See
 [development bootstrap evidence and state recovery limits](development-bootstrap.md).
@@ -181,7 +183,8 @@ permissions, not CI infrastructure/backend permissions or live partial-failure
 recovery. Partial-failure behavior remains covered by offline tests. Production
 has separate explicit authorization and enablement recorded in
 [production bootstrap](production-bootstrap.md), including successful publication
-and hosted verification. Production rollback rehearsal remains pending.
+and hosted verification. The retained-release recovery rehearsal is verified;
+normal restoration remains to be observed after the final evidence PR merges.
 
 ## Hosted verification (#12)
 
@@ -305,8 +308,10 @@ hosted command without its explicit origin opt-in fails before test discovery.
 
 Retained-release rollback was exercised live; deliberate partial upload,
 invalidation and checkpoint failures were exercised **offline only**. No live
-failure was injected. CI infrastructure/backend locking operations, production
-rollback, screen-reader review and final product design remain unverified.
+failure was injected. CI infrastructure/backend locking operations, final
+production restoration, screen-reader review and final product design remain
+unverified. Production retained-release recovery has subsequently been verified;
+see [production evidence](production-bootstrap.md).
 Production infrastructure itself was subsequently bootstrapped as recorded in
 [production bootstrap](production-bootstrap.md).
 The shared state bucket still has no versioning or automatic ongoing backup;

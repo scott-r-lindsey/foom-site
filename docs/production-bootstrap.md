@@ -192,21 +192,71 @@ unchanged, and `PROD_INFRA_APPROVED_SHA` remained absent. No workflow was
 triggered directly and no site objects or infrastructure were mutated by these
 checks. Development settings remain unchanged.
 
-The recovery override is now active and sticky. The integration owner's merge
-of the docs-only rehearsal PR will create the fresh eligible main run that
-republishes the first retained release through the normal serialized publisher.
-An ordinary rerun is not a stale/equal scheduling-identity bypass. Phase 1 stops
-at the reviewed, green draft PR; the implementer does not merge it.
+At the phase-1 checkpoint, the recovery override was active and sticky. The
+integration owner's merge of the docs-only rehearsal PR supplied the fresh
+eligible main run through the normal serialized publisher. An ordinary rerun
+would not bypass stale/equal scheduling identities.
 
-After that merge, phase 2 must confirm successful publication, `rollbackOf` the
-first release, its `contentSha`, exact retained bytes, `pending: null`, and
-completed invalidation. Only then clear `PROD_RECOVERY_RELEASE`, record that
-readback, and hand off a final evidence PR whose merge restores normal current
-publication. Verify restored scheduling/content identity and live bytes after
-that publication, then record final issue evidence.
+## Rollback rehearsal: phase 2 verified
 
-Issue #33 remains open until recovery and restoration evidence are complete.
-No production recovery or restoration has run at this phase-1 checkpoint.
+[PR #37](https://github.com/scott-r-lindsey/foom-site/pull/37) merged as
+`0abfd239ed4ed01ebe3714301260f73e252f85d2`.
+[Recovery main run 40621930001, attempt 1](https://github.com/scott-r-lindsey/foom-site/actions/runs/40621930001)
+succeeded, including `Deploy validated artifact / publish`. Authorized read-only
+checks verified the recovery ledger and CloudFront invalidation:
+
+| Field                         | Verified value                                                            |
+| ----------------------------- | ------------------------------------------------------------------------- |
+| Scheduling source SHA         | `0abfd239ed4ed01ebe3714301260f73e252f85d2`                                |
+| Scheduling release            | `40621930001-1-12788250462`                                               |
+| Scheduling artifact           | `12788250462`                                                             |
+| `rollbackOf`                  | Exact first release identity, `40620201832-1-12787305854`                 |
+| `contentSha`                  | `82d6dde2eb7cbfac98629197a057ba2718a71e43`                                |
+| Content artifact              | `12787305854`                                                             |
+| Retained content digest       | `sha256:656ba8bb4314fa8a65bd932cdb61045b877b72630cf734ccfb9598fbb0d4e98b` |
+| Invalidation                  | `I22ZVV5HGOM7MMR6IU4MFUVL3Q`, `Completed`, paths `/*`                     |
+| Invalidation caller reference | `40621930001-1-12788250462`                                               |
+| Ledger                        | Three retained releases, current is recovery release, `pending: null`     |
+
+The first retained artifact was downloaded read-only and independently verified
+again through trusted ZIP/archive digest, source/origin and recomputed file
+manifest checks. The current recovery manifest equaled that first retained
+manifest. Headless verification against the extracted first-release build at
+`https://foom-term.com` passed **22/22 on its first attempt**, with zero Playwright
+retries at 320px and 1440px. Every live file matched retained bytes and exact
+publication metadata; production canonical/indexing/sitemap, fixture absence,
+redirects, custom 404s, TLS/security headers, accessibility and keyboard checks
+passed. Both original normal releases had identical deployed bytes, so the
+explicit `rollbackOf`/`contentSha` transition and new scheduling identity are the
+recovery observables; no visible content change is claimed.
+
+The session was interrupted by a provider **model-at-capacity error** after the
+hosted suite completed. This was a provider/session interruption, not a site or
+test failure. On resume, the completed result was confirmed as passed with no
+failed tests; the suite was not rerun.
+
+Only after successful identity, invalidation and live-byte verification,
+`PROD_RECOVERY_RELEASE` was deleted. Repository-variable readback confirmed its
+absence and every other variable unchanged; `PROD_INFRA_APPROVED_SHA` remains
+absent. No direct object writes, infrastructure operations, IAM changes or
+development-variable changes were used for recovery verification. The existing
+main publisher performed the authorized recovery.
+
+## Normal restoration awaiting evidence-PR merge
+
+The recovery override is now absent. The integration owner's merge of the final
+evidence PR will schedule a fresh normal main publication. Recovery is verified;
+normal restoration has **not yet been observed** at this checkpoint. After the
+merge, verify successful publication, a current main scheduling/content identity
+without `rollbackOf`/`contentSha` recovery overrides, `pending: null`, completed
+invalidation, matching live bytes and continued absence of the recovery variable.
+Record that final evidence in an issue #33 comment as authorized by the owner.
+
+The owner explicitly approved using `Closes #33` in the evidence PR once only
+post-merge restoration observation remained. That closing reference is
+conditional on this documented final check; it is not a claim that restoration
+has already been verified. The implementer hands off for the orchestrator's
+review/merge and does not merge locally.
 
 ## Offline evidence
 
@@ -230,3 +280,8 @@ The phase-1 rehearsal change is documentation-only. Relative file links,
 formatting and `git diff --check` were checked locally; the commit hooks also run
 lint and typecheck. Full PR CI results are recorded separately in the PR body.
 The live release/variable evidence above is distinct from those offline checks.
+
+The phase-2 evidence change is documentation-only. Formatting, relative file
+links, consistency and `git diff --check` are checked locally, with lint and
+typecheck enforced by commit hooks. PR Quality gate evidence is recorded in the
+PR separately from the completed recovery hosted run above.
