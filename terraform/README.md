@@ -8,7 +8,9 @@ GitHub settings, or published objects. Approved identities and ownership are in
 been bootstrapped through separately authorized operator actions; see
 [development](../docs/development-bootstrap.md) and
 [production](../docs/production-bootstrap.md) evidence. Production publication and
-hosted verification have passed; production rollback rehearsal remains pending.
+hosted verification and retained-release recovery have passed. The recovery
+override is cleared; normal restoration awaits the final evidence PR merge and
+verification.
 
 Terraform **1.15.9** and AWS provider **6.21.0** are pinned; commit the provider
 lockfile. The certificate provider alias uses `us-east-1`; the default provider
