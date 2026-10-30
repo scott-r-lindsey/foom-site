@@ -215,6 +215,19 @@ test('every built page has absolute matching social URLs and fingerprinted PNG i
       ]);
     }
     assert.equal($('link[rel="preload"][as="font"][crossorigin]').length, 3);
+    const license = $('link[rel="license"]').attr('href')!;
+    assert.match(license, /^\/_astro\/third-party-notices\.[\w-]+\.txt$/);
+    const notices = await readFile(path.join('dist', license), 'utf8');
+    for (const text of [
+      'Copyright 2026 Scott Lindsey',
+      'Apache License',
+      'SIL OPEN FONT LICENSE',
+      'archivoblack-OFL.txt',
+      'courierprime-OFL.txt',
+      'geist-OFL.txt',
+      'geistmono-OFL.txt',
+    ])
+      assert.ok(notices.includes(text), text);
     assert.equal($('script').length, 0);
   }
 });

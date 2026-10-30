@@ -28,6 +28,9 @@ Foom: Copyright 2026 Scott Lindsey, Apache-2.0. The upstream Apache license and
 NOTICE are included verbatim. The icons are unmodified outputs; the apple-touch
 and social compositions are the size/layout adaptations described above. Fonts
 retain their separate SIL licenses in `../fonts/`.
+`third-party-notices.txt` combines those verbatim license/notice texts with an
+adaptation note; the layout links this fingerprinted file so web distributions
+carry the attributions as well as the source repository.
 
 The shell now follows system light preference with dark as its default, and uses
 this PNG social image with absolute OG/Twitter URLs and `summary_large_image`.

@@ -4,6 +4,7 @@ import favicon16 from '../assets/brand/favicon-16.png';
 import favicon32 from '../assets/brand/favicon-32.png';
 import appleTouch from '../assets/brand/apple-touch-icon.png';
 import social from '../assets/brand/social.png';
+import notices from '../assets/brand/third-party-notices.txt?url';
 import displayFont from '../assets/fonts/archivo-black.woff2?url';
 import bodyFont from '../assets/fonts/geist.woff2?url';
 import voiceFont from '../assets/fonts/courier-prime.woff2?url';
@@ -60,6 +61,7 @@ const robots =
       type="font/woff2"
       crossorigin
     />
+    <link rel="license" type="text/plain" href={notices} />
     <meta name="robots" content={robots} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="foom" />
