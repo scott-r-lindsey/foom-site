@@ -1,15 +1,108 @@
-:root {
-  color-scheme: light;
-  --color-background: #f7f7f2;
-  --color-surface: #ffffff;
-  --color-text: #202923;
-  --color-muted: #526057;
-  --color-accent: #285d3f;
-  --color-border: #ccd3cb;
-  --color-focus: #7144a0;
+@font-face {
+  font-family: 'Archivo Black';
+  src: url('../assets/fonts/archivo-black.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --font-body: system-ui, sans-serif;
-  --font-mono: ui-monospace, 'Cascadia Code', monospace;
+@font-face {
+  font-family: 'Courier Prime';
+  src: url('../assets/fonts/courier-prime.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('../assets/fonts/geist.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../assets/fonts/geist-mono.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Match fallback x-height and vertical metrics while the bundled face loads. */
+@font-face {
+  font-family: 'Eclipse Display Fallback';
+  src: local('Arial Black');
+  size-adjust: 101.73%;
+  ascent-override: 86.31%;
+  descent-override: 20.64%;
+  line-gap-override: 0%;
+}
+
+/* Match fallback x-height and vertical metrics while the bundled face loads. */
+@font-face {
+  font-family: 'Eclipse Body Fallback';
+  src: local('Arial');
+  size-adjust: 102.12%;
+  ascent-override: 98.41%;
+  descent-override: 28.89%;
+  line-gap-override: 0%;
+}
+
+/* Match fallback x-height and vertical metrics while the bundled face loads. */
+@font-face {
+  font-family: 'Eclipse Voice Fallback';
+  src: local('Courier New');
+  size-adjust: 106.66%;
+  ascent-override: 73.25%;
+  descent-override: 32.05%;
+  line-gap-override: 0%;
+}
+
+/* Match fallback x-height and vertical metrics while the bundled face loads. */
+@font-face {
+  font-family: 'Eclipse Mono Fallback';
+  src: local('Courier New');
+  size-adjust: 125.3%;
+  ascent-override: 80.21%;
+  descent-override: 23.54%;
+  line-gap-override: 0%;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #05040a;
+  --surface: #0d0a17;
+  --line: #251d3f;
+  --ink: #f4efff;
+  --muted: #9d93bd;
+  --accent: #9b6bff;
+  --accent-deep: #7a3cff;
+  --highlight: var(--accent);
+  --highlight-deep: var(--accent-deep);
+  /* Reserved for labeled status signals, never decoration or marketing. */
+  --attention: #ffb23e;
+  --attention-ink: #ffb23e;
+  --done: #6fe0a3;
+  --done-ink: #6fe0a3;
+  --failed: #ff2e88;
+  --failed-ink: #ff2e88;
+  --hole: #06050b;
+
+  /* Compatibility contract for existing pages and concurrent /download/ work. */
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-text: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-border: var(--line);
+  --color-focus: var(--highlight);
+
+  --font-display: 'Archivo Black', 'Eclipse Display Fallback', sans-serif;
+  --font-voice: 'Courier Prime', 'Eclipse Voice Fallback', monospace;
+  --font-body: 'Geist', 'Eclipse Body Fallback', sans-serif;
+  --font-mono: 'Geist Mono', 'Eclipse Mono Fallback', monospace;
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: clamp(1.25rem, 1rem + 1vw, 1.75rem);
@@ -28,6 +121,26 @@
   --page-gutter: clamp(1rem, 4vw, 3rem);
   --motion-duration: 120ms;
   --motion-easing: ease-out;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f3f0fa;
+    --surface: #e9e4f5;
+    --line: #ddd6ee;
+    --ink: #14101f;
+    --muted: #625a7a;
+    --accent: #5b2bd9;
+    --accent-deep: #3b1a99;
+    --attention: #d98200;
+    --attention-ink: #8c5000;
+    --done: #13804a;
+    --done-ink: #0e6b3c;
+    --failed: #d6166e;
+    --failed-ink: #b0105a;
+    --hole: #06050b;
+  }
 }
 
 * {
@@ -78,9 +191,9 @@ a:hover {
   display: inline-block;
   padding-block: var(--space-1);
   color: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   font-size: var(--text-lead);
-  font-weight: 700;
+  font-weight: 400;
   text-decoration: none;
 }
 
@@ -93,10 +206,19 @@ main {
   max-inline-size: var(--width-prose);
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
 h1 {
   margin: 0 0 var(--space-3);
   font-size: var(--text-heading);
-  font-weight: 650;
   letter-spacing: -0.04em;
   line-height: var(--leading-heading);
 }
@@ -106,6 +228,7 @@ p {
 }
 
 .lead {
+  font-family: var(--font-voice);
   color: var(--color-muted);
   font-size: var(--text-lead);
 }
@@ -117,6 +240,7 @@ p {
 }
 
 .site-footer {
+  font-family: var(--font-voice);
   padding-block: var(--space-4);
   border-block-start: 1px solid var(--color-border);
   color: var(--color-muted);
