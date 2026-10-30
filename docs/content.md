@@ -1,9 +1,9 @@
-# Site copy for owner approval
+# Site copy
 
 Draft for [#28](https://github.com/scott-r-lindsey/foom-site/issues/28).
-Owner approval is pending. This document supplies proposed copy; it does not
-authorize implementation of #31 or publication. Record approval on #28 before
-#31 starts. Content PRs need the owner's dev check before merge.
+The owner approved this copy on 2026-10-30, including the tagline and the
+qualified Local by design wording. #31 implements it. Content PRs still need the
+owner's dev check before merge.
 
 Product evidence is pinned to Foom commit
 [`245a4d44f45c0c833bedfee19791abf3235beba8`](https://github.com/scott-r-lindsey/foom/commit/245a4d44f45c0c833bedfee19791abf3235beba8).
@@ -179,10 +179,12 @@ metadata requests. Endpoint log fields and retention copy remain with #39 after
 
 **Release link:** Nightly release → <https://github.com/scott-r-lindsey/foom/releases/tag/nightly>
 
-Editorial note: #32 resolves platform links, version, date and size at build time.
-Those values are release data, not prose placeholders to publish. All three
-platforms remain listed. The homepage link label remains Download even when
-platform detection enhances its destination.
+Editorial note: per the [#32 scope change](https://github.com/scott-r-lindsey/foom-site/issues/32),
+each platform link points to the nightly release page above. The rolling
+nightly deletes its previous assets on each rollover, so the page shows no
+version, date, archive size or direct asset URL. Direct links return with the
+immutable nightly feed (foom#604), which needs its own issue. All three
+platforms remain listed. The homepage link label remains Download.
 
 ### macOS
 
@@ -221,37 +223,14 @@ desktop session.
 
 #### Ubuntu 24.04
 
-Install the runtime libraries:
+**Body:** Ubuntu 24.04 needs a few runtime libraries and an AppArmor profile for
+Chromium's sandbox. Follow the setup in the Foom repository.
 
-```sh
-sudo apt install libgtk-3-0t64 libnss3 libasound2t64 libgbm1 libxss1 libxtst6 libatk-bridge2.0-0t64
-```
+**Link label:** Ubuntu 24.04 setup → <https://github.com/scott-r-lindsey/foom/blob/main/docs/nightly-opening.md#ubuntu-2404-sandbox-setup>
 
-Chromium needs a working user-namespace sandbox. If launch reports “No usable
-sandbox”, install the application-specific AppArmor profile below. From inside
-the extracted folder containing `Foom`:
-
-```sh
-sudo install -d /opt/foom-nightly
-sudo cp -a . /opt/foom-nightly/
-sudo tee /etc/apparmor.d/foom-nightly > /dev/null <<'PROFILE'
-abi <abi/4.0>,
-include <tunables/global>
-profile foom-nightly /opt/foom-nightly/Foom flags=(unconfined) {
-  userns,
-}
-PROFILE
-sudo apparmor_parser -r /etc/apparmor.d/foom-nightly
-/opt/foom-nightly/Foom
-```
-
-Keep Foom at `/opt/foom-nightly/Foom`. This profile permits Chromium's sandbox;
-Electron's renderer sandbox stays enabled. Do not disable the sandbox. If
-upgrading from an older nightly with a lowercase `foom` executable, repeat the
-profile steps so AppArmor matches `/opt/foom-nightly/Foom`.
-
-For later nightlies, quit Foom and copy the new extracted contents to the same
-installation directory before launching.
+Editorial note: link to the maintained instructions rather than copying the
+package list and profile, which change with the app. Do not suggest disabling
+the sandbox.
 
 ### Checksums and source
 
@@ -261,8 +240,9 @@ installation directory before launching.
 
 **Link labels:** SHA256SUMS · Source
 
-Editorial note: #32 resolves the checksum asset alongside the ZIPs. Source links
-to <https://github.com/scott-r-lindsey/foom>. Do not hardcode a nightly version,
+Editorial note: SHA256SUMS links to
+<https://github.com/scott-r-lindsey/foom/releases/download/nightly/SHA256SUMS>.
+Source links to <https://github.com/scott-r-lindsey/foom>. Do not hardcode a nightly version,
 date, archive size or asset URL from this draft.
 
 ## Footer
@@ -312,17 +292,19 @@ Foom documentation.
 | Rolling nightly development builds; macOS arm64, Windows x64 and Linux x64 ZIPs; SHA256SUMS                         | [README.md][readme], “Try a nightly”; [docs/validation.md][validation], “CI and packages”; [docs/nightly-opening.md][nightly-opening], “Opening an unsigned nightly” | Owner selects nightly channel. Older opening document is used only for platform opening and Linux instructions, not macOS signing status.                                                                                                                                                                                                                                                                                                                |
 | macOS nightly Developer ID signed and notarized                                                                     | [docs/validation.md][validation], “CI and packages”                                                                                                                  | Published nightlies, not local or PR ad-hoc artifacts. Extract/open instruction adapts the opening document without quarantine removal.                                                                                                                                                                                                                                                                                                                  |
 | Windows unsigned; SmartScreen More info → Run anyway                                                                | [docs/validation.md][validation], “CI and packages”; [docs/nightly-opening.md][nightly-opening], “Opening an unsigned nightly”, Windows bullet                       | Windows signing remains #665.                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| Linux graphical launch, Ubuntu libraries and sandbox setup, fixed path and upgrades                                 | [docs/nightly-opening.md][nightly-opening], Linux bullet and “Ubuntu 24.04 sandbox setup”                                                                            | Commands and package names retained; no sandbox-disabling workaround.                                                                                                                                                                                                                                                                                                                                                                                    |
+| Linux graphical launch, Ubuntu libraries and sandbox setup, fixed path and upgrades                                 | [docs/nightly-opening.md][nightly-opening], Linux bullet and “Ubuntu 24.04 sandbox setup”                                                                            | Page links to the maintained setup instead of copying commands; no sandbox-disabling workaround.                                                                                                                                                                                                                                                                                                                                                         |
 | Footer voice                                                                                                        | [docs/brand.md][brand], “Voice”                                                                                                                                      | “Nothing needs you. Yet.” is brand wording, not live session status.                                                                                                                                                                                                                                                                                                                                                                                     |
 | System light mode, invariant black hole and reserved colors                                                         | [docs/brand.md][brand], “Rules” and “Interface themes”                                                                                                               | Site theme choice comes from the owner decision; public product copy makes no new theme promise.                                                                                                                                                                                                                                                                                                                                                         |
 
-## Open questions for the owner
+## Owner answers
 
-1. Approve the proposed tagline “Many agents. One needs you.” and the page copy?
-   The tagline is positioning, not a literal count of pending requests.
-2. Approve the qualified Local by design wording, including the agent model
-   context disclosure? #31's shorthand must not become an unconditional promise
-   that terminal content can never reach a model.
+Approved on 2026-10-30:
+
+1. The tagline “Many agents. One needs you.” and the page copy. The tagline is
+   positioning, not a literal count of pending requests.
+2. The qualified Local by design wording, including the agent model context
+   disclosure. #31's shorthand must not become an unconditional promise that
+   terminal content can never reach a model.
 
 No new feature, performance, testimonial or comparison claims are proposed.
 The download channel, theme and placement of the orchestration payoff are
