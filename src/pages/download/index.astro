@@ -1,0 +1,126 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+
+// Interim copy stays together so #28's approved wording can replace it easily.
+const content = {
+  title: 'Download Foom',
+  description: 'Foom nightly builds for macOS, Windows and Linux.',
+  intro:
+    'These are nightly development builds. Choose your platform’s ZIP from the GitHub release page.',
+  releaseUrl: 'https://github.com/scott-r-lindsey/foom/releases/tag/nightly',
+  checksums: 'SHA256SUMS',
+  checksumsUrl:
+    'https://github.com/scott-r-lindsey/foom/releases/download/nightly/SHA256SUMS',
+  checksumNote: 'Checksums for the current nightly assets:',
+  platforms: [
+    {
+      id: 'macos',
+      name: 'macOS',
+      architecture: 'Apple silicon · arm64',
+      notes: [
+        'Developer ID signed and notarized ZIP. Extract it and open Foom.app.',
+      ],
+      link: 'Find the macOS nightly',
+    },
+    {
+      id: 'windows',
+      name: 'Windows',
+      architecture: 'x64',
+      notes: [
+        'Unsigned ZIP. Extract it and open Foom.exe.',
+        'If SmartScreen warns, choose More info → Run anyway.',
+      ],
+      link: 'Find the Windows nightly',
+    },
+    {
+      id: 'linux',
+      name: 'Linux',
+      architecture: 'x64',
+      notes: ['ZIP. Extract it and run ./Foom in a graphical desktop session.'],
+      link: 'Find the Linux nightly',
+    },
+  ],
+  linuxTitle: 'Ubuntu 24.04 setup',
+  linuxLibraries: 'Install Electron’s runtime libraries:',
+  linuxCommand:
+    'sudo apt install libgtk-3-0t64 libnss3 libasound2t64 libgbm1 libxss1 libxtst6 libatk-bridge2.0-0t64',
+  linuxSandbox:
+    'Chromium needs a working user-namespace sandbox. If Foom reports “No usable sandbox”, follow the application-specific AppArmor setup. Keep the sandbox enabled.',
+  linuxHelp: 'Ubuntu 24.04 AppArmor sandbox setup',
+  linuxHelpUrl:
+    'https://github.com/scott-r-lindsey/foom/blob/main/docs/nightly-opening.md#ubuntu-2404-sandbox-setup',
+};
+---
+
+<SiteLayout title={content.title} description={content.description}>
+  <h1>{content.title}</h1>
+  <p class="lead">{content.intro}</p>
+  <div class="platforms">
+    {content.platforms.map((platform) => (
+      <section class="platform" aria-labelledby={platform.id}>
+        <h2 id={platform.id}>{platform.name}</h2>
+        <p class="architecture">{platform.architecture}</p>
+        {platform.notes.map((note) => (
+          <p>{note}</p>
+        ))}
+        <a href={content.releaseUrl}>{platform.link}</a>
+      </section>
+    ))}
+  </div>
+  <p class="checksums">
+    {content.checksumNote}{' '}
+    <a href={content.checksumsUrl}>{content.checksums}</a>.
+  </p>
+  <section class="linux-setup" aria-labelledby="ubuntu-setup">
+    <h2 id="ubuntu-setup">{content.linuxTitle}</h2>
+    <p>{content.linuxLibraries}</p>
+    <pre><code>{content.linuxCommand}</code></pre>
+    <p>{content.linuxSandbox}</p>
+    <a href={content.linuxHelpUrl}>{content.linuxHelp}</a>
+  </section>
+</SiteLayout>
+
+<style>
+  .platforms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--space-3);
+    margin-block: var(--space-4);
+  }
+
+  .platform {
+    padding: var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  h2 {
+    margin-block: 0 var(--space-2);
+    font-size: var(--text-lead);
+  }
+
+  .architecture {
+    color: var(--color-muted);
+    font-size: var(--text-small);
+  }
+
+  .platform a,
+  .linux-setup a {
+    display: inline-block;
+    padding-block: var(--space-1);
+  }
+
+  .checksums {
+    margin-block-end: var(--space-5);
+  }
+
+  pre {
+    margin-block: 0 var(--space-3);
+    padding: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: var(--text-small);
+  }
+</style>
